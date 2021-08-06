@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QThread, QTimer, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal
 import time
-import gtools
+from gtools import GTools
 from Treadmill import TreadmillData
 
 
@@ -74,7 +74,7 @@ class ReadThreadClass(QThread):
     def finishRecording(self, filename):
         self.record = False
         self.messageSignal.emit('Recording #' + str(self.measurementCount) + ' finished.\n')
-        gtools.write2File(filename, self.timeList, self.velocityList, self.absPositionList, self.lapList,
+        GTools.write2File(filename, self.timeList, self.velocityList, self.absPositionList, self.lapList,
                           self.relPositionList, self.lickList)
         self.emptyLists()
         self.messageSignal.emit('Data written to: ' + filename + '\n')

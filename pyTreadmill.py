@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QComboBox, QMess
 from Treadmill import Treadmill
 from Port import Port
 from ReadThreadClass import ReadThreadClass
-import gtools
+from gtools import GTools
 import pyqtgraph as pg
 import numpy as np
 import time
@@ -229,7 +229,7 @@ class Window(QWidget):
             self.connectButton.setProperty("enabled", True)
 
     def selectFolder(self):
-        path = gtools.getSaveFolder()
+        path = GTools.SAVE_FOLDER_PATH
         with open(path, 'r') as file:
             saveFolder = file.read()
         if os.path.isdir(saveFolder):
@@ -238,7 +238,7 @@ class Window(QWidget):
             self.readThread.saveFolder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
         if self.readThread.saveFolder:
-            gtools.updateSaveFolder(self.readThread.saveFolder)
+            GTools.updateSaveFolder(self.readThread.saveFolder)
             self.print2Console("Save folder set to: \n " + self.readThread.saveFolder + "\n")
         else:
             self.readThread.saveFolder = None

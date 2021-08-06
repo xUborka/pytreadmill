@@ -1,21 +1,7 @@
 import serial
-import serial.tools.list_ports
-import gtools
-from dataclasses import dataclass
+from gtools import GTools
 from PyQt5.QtCore import QObject, pyqtSignal
-
-
-@dataclass
-class TreadmillData:
-    time: int = None
-    recording: int = None
-    velocity: int = None
-    absPosition: int = None
-    lap: int = None
-    relPosition: int = None
-    lick: int = None
-    initialized: int = None
-    portStates: tuple = None
+from treadmilldata import TreadmillData
 
 
 class Treadmill(QObject):
@@ -71,21 +57,21 @@ class Treadmill(QObject):
     # 	arduinoPorts = self.findTreadmills()
     # 	while not arduinoPorts:
     # 		print("Error: No Treadmill found. Please connect one.")
-    # 		if self.logFilename is not None: gtools.log_error(self.logFilename, "No Treadmill found")
+    # 		if self.logFilename is not None: GTools.log_error(self.logFilename, "No Treadmill found")
     # 		print("Retry in 5 seconds...\n")
     # 		sleep(5)
     # 		arduinoPorts = self.findTreadmills()
     # 	if len(arduinoPorts) > 1: print("Warning: Multiple Treadmills found - using the first")
     # 	self.connect(arduinoPorts[0])
 
-    def setConnectionState(self, boolean):
-        self.connected = boolean
+    def setConnectionState(self, init_state):
+        self.connected = init_state
 
-    def setInitializationState(self, boolean):
-        self.initialized = boolean
+    def setInitializationState(self, init_state):
+        self.initialized = init_state
 
-    def setRecordingState(self, boolean):
-        self.recording = boolean
+    def setRecordingState(self, init_state):
+        self.recording = init_state
 
     def updateTreadmillState(self):
         if self.treadmillData.initialized != self.initialized:
@@ -100,45 +86,21 @@ class Treadmill(QObject):
             else:
                 self.recordSignal.emit(False)
 
-    def allocateSerialData(self, serialInput):
-        time, recording, velocity, absPosition, lap, relPosition, lick, initialized, portStates = serialInput.split(" ")
-
-        self.treadmillData.time = int(time)
-        self.treadmillData.recording = int(recording)
-        self.treadmillData.velocity = int(velocity)
-        self.treadmillData.absPosition = int(absPosition)
-        self.treadmillData.lap = int(lap)
-        self.treadmillData.relPosition = int(relPosition)
-        self.treadmillData.lick = int(lick)
-        self.treadmillData.initialized = int(initialized)
-        self.treadmillData.portStates = list(map(int, portStates))
-
-    def errorTreadmillData(self):
-        self.treadmillData.time = 0
-        self.treadmillData.recording = -1
-        self.treadmillData.velocity = 0
-        self.treadmillData.absPosition = 0
-        self.treadmillData.lap = 0
-        self.treadmillData.relPosition = 0
-        self.treadmillData.lick = 0
-        self.treadmillData.initialized = 0
-        self.treadmillData.portStates = [0, 0, 0]
-
     def readData(self):
         try:
             serialInput = self.serialObject.readline()
             serialInput = serialInput.decode(encoding='ascii')
             serialInput = serialInput.rstrip()
-            self.allocateSerialData(serialInput)
+            self.treadmillData = TreadmillData(serialInput.split(" "))
 
         except serial.SerialException as e:
             print(e)
             print("Treadmill uplugged")
             if self.logFilename is not None:
-                gtools.log_error(self.logFilename, str(e) + " Treadmill unplugged")
+                GTools.log_error(self.logFilename, str(e) + " Treadmill unplugged")
 
             self.connectionSignal.emit(False)
-            self.errorTreadmillData()
+            self.treadmillData.invalidate()
             self.updateTreadmillState()
             return self.treadmillData
 
@@ -146,7 +108,7 @@ class Treadmill(QObject):
             print(e)
             print("Serial communication error")
             if self.logFilename is not None:
-                gtools.log_error(self.logFilename, str(e) + " Serial communication error")
+                GTools.log_error(self.logFilename, str(e) + " Serial communication error")
 
             self.errorTreadmillData()
             self.updateTreadmillState()
