@@ -6,12 +6,12 @@ class GTools:
     SAVE_FOLDER_PATH = os.path.join(os.getcwd(), 'res', 'def_save_folder.txt')
     
     @staticmethod
-    def write2File(filename, time_list, vel_list, abs_pos_list, lap_list, rel_pos_list, lick_list, delimiter=","):    # Writes the provided arrays into a csv
+    def write2File(filename, data_list):    # Writes the provided arrays into a csv
         with open(filename, 'w') as f:
-            f.write(delimiter.join(['time', 'velocity', 'Absolute Position', 'Lap#', 'Relative Position', 'Lick\n']))
+            f.write(','.join(['time', 'velocity', 'Absolute Position', 'Lap#', 'Relative Position', 'Lick\n']))
         
-            for row in zip(time_list, vel_list, abs_pos_list, lap_list, rel_pos_list, lick_list):
-                f.write(delimiter.join(row)+'\n')
+            for row in data_list:
+                f.write(str(row) + '\n')
 
         print(f'Data written to: {filename}\n')
 

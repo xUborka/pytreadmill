@@ -21,31 +21,16 @@ class ReadThreadClass(QThread):
         self.positionTriggerThreads = list()
         self.treadmillData = TreadmillData()
 
-        self.timeList = list()
-        self.velocityList = list()
-        self.absPositionList = list()
-        self.lapList = list()
-        self.relPositionList = list()
-        self.lickList = list()
+        self.treadmill_data_list = list()
 
     def getTreadmillData(self):
         return self.treadmillData
 
     def emptyLists(self):
-        self.timeList.clear()
-        self.velocityList.clear()
-        self.absPositionList.clear()
-        self.lapList.clear()
-        self.relPositionList.clear()
-        self.lickList.clear()
+        self.treadmill_data_list.clear()
 
     def appendData2Lists(self):
-        self.timeList.append(str(self.treadmillData.time))
-        self.velocityList.append(str(self.treadmillData.velocity))
-        self.absPositionList.append(str(self.treadmillData.absPosition))
-        self.lapList.append(str(self.treadmillData.lap))
-        self.relPositionList.append(str(self.treadmillData.relPosition))
-        self.lickList.append(str(self.treadmillData.lick))
+        self.treadmill_data_list.append(self.treadmillData)
     
     def printData2GUI(self, prefix):
         self.printDataSignal.emit(prefix +
@@ -74,8 +59,7 @@ class ReadThreadClass(QThread):
     def finishRecording(self, filename):
         self.record = False
         self.messageSignal.emit('Recording #' + str(self.measurementCount) + ' finished.\n')
-        GTools.write2File(filename, self.timeList, self.velocityList, self.absPositionList, self.lapList,
-                          self.relPositionList, self.lickList)
+        GTools.write2File(filename, self.treadmill_data_list)
         self.emptyLists()
         self.messageSignal.emit('Data written to: ' + filename + '\n')
         self.messageSignal.emit("Waiting for trigger...")

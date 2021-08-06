@@ -1,7 +1,7 @@
 import serial
 from gtools import GTools
 from PyQt5.QtCore import QObject, pyqtSignal
-from treadmilldata import TreadmillData
+from treadmill_data import TreadmillData
 
 
 class Treadmill(QObject):

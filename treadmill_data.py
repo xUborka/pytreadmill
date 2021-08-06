@@ -1,6 +1,10 @@
 
 class TreadmillData:
-    def __init__(self, t=0, rec=-1, vel=0, abs_pos=0, lap=0, rel_pos=0, lick=0, init=0, port_states=[0, 0, 0]):
+    def __init__(self, t: int = 0, rec: int = -1,
+                 vel: int = 0, abs_pos: int = 0,
+                 lap: int = 0, rel_pos: int = 0,
+                 lick: int = 0, init: int = 0,
+                 port_states: list = [0, 0, 0]):
         self.time = int(t)
         self.recording = int(rec)
         self.velocity = int(vel)
@@ -21,3 +25,6 @@ class TreadmillData:
         self.lick = 0
         self.initialized = 0
         self.portStates = [0, 0, 0]
+
+    def __str__(self) -> str:
+        return ','.join(map(str, [self.time, self.velocity, self.absPosition, self.lap, self.relPosition, self.lick]))
