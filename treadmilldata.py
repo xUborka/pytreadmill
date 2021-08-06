@@ -1,6 +1,6 @@
 
 class TreadmillData:
-    def __init__(self, t=None, rec=None, vel=None, abs_pos=None, lap=None, rel_pos=None, lick=None, init=None, port_states=None):
+    def __init__(self, t=0, rec=-1, vel=0, abs_pos=0, lap=0, rel_pos=0, lick=0, init=0, port_states=[0, 0, 0]):
         self.time = int(t)
         self.recording = int(rec)
         self.velocity = int(vel)
@@ -9,7 +9,7 @@ class TreadmillData:
         self.relPosition = int(rel_pos)
         self.lick = int(lick)
         self.initialized = int(init)
-        self.portStates = map(int, port_states)
+        self.portStates = list(map(int, port_states))
 
     def invalidate(self):
         self.time = 0
