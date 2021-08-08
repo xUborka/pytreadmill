@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 import time
 from gtools import GTools
-from Treadmill import TreadmillData
+from treadmill_data import TreadmillData
 
 
 class ReadThreadClass(QThread):

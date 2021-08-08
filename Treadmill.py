@@ -1,4 +1,5 @@
 import serial
+import serial.tools.list_ports
 from gtools import GTools
 from PyQt5.QtCore import QObject, pyqtSignal
 from treadmill_data import TreadmillData
@@ -19,12 +20,15 @@ class Treadmill(QObject):
         self.treadmillData = TreadmillData()
         self.logFilename = None
 
+        self.serialObject = None
+
         self.connectionSignal.connect(self.setConnectionState)
         self.initializationSignal.connect(self.setInitializationState)
         self.recordSignal.connect(self.setRecordingState)
 
     @staticmethod
     def findTreadmills():
+        print([p.device for p in serial.tools.list_ports.comports()])
         arduinoPorts = [
             p.device
             for p in serial.tools.list_ports.comports()
@@ -91,7 +95,7 @@ class Treadmill(QObject):
             serialInput = self.serialObject.readline()
             serialInput = serialInput.decode(encoding='ascii')
             serialInput = serialInput.rstrip()
-            self.treadmillData = TreadmillData(serialInput.split(" "))
+            self.treadmillData = TreadmillData(*serialInput.split(" "))
 
         except serial.SerialException as e:
             print(e)
@@ -110,13 +114,14 @@ class Treadmill(QObject):
             if self.logFilename is not None:
                 GTools.log_error(self.logFilename, str(e) + " Serial communication error")
 
-            self.errorTreadmillData()
+            self.treadmillData.invalidate()
             self.updateTreadmillState()
             return self.treadmillData
 
-        except:
+        except Exception as e:
+            print(e)
             print("Unknown error during reading serial data.")
-            self.errorTreadmillData()
+            self.treadmillData.invalidate()
             self.updateTreadmillState()
             return self.treadmillData
 

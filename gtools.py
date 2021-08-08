@@ -1,4 +1,3 @@
-# lehetne ide csoportosítani a fileműveleteket inkább. Femtoheader felesleges, nem használjuk
 import os
 
 
