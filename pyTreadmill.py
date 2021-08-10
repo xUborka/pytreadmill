@@ -99,17 +99,17 @@ class Window(QWidget):
         # Port A Widgets
         self.portA = Port("A", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
         self.portA.initSpinBox()
-        layoutPortA = Port.initPortUI(self.portA)
+        layoutPortA = Window.initPortUI(self.portA)
 
         # Port B Widgets
         self.portB = Port("B", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
         self.portB.initSpinBox()
-        layoutPortB = Port.initPortUI(self.portB)
+        layoutPortB = Window.initPortUI(self.portB)
 
         # Port C Widgets
         self.portC = Port("C", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
         self.portC.initSpinBox()
-        layoutPortC = Port.initPortUI(self.portC)
+        layoutPortC = Window.initPortUI(self.portC)
 
         # Layout for All Port Layouts
         layoutAllPorts = QVBoxLayout()
