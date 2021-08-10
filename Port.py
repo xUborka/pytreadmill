@@ -104,13 +104,17 @@ class Port(QWidget):
         # self.worker.finished.connect(self.worker.deleteLater)
         # self.positionTriggerData.thread.finished.connect(self.positionTriggerData.thread.deleteLater)
 
-    def setSpinBox(self, name, minimum, maximum, value, step):
-        spinBox = self.portDictionary[name]
-        spinBox.setMinimum(minimum)
-        spinBox.setMaximum(maximum)
-        spinBox.setValue(value)
-        spinBox.setSingleStep(step)
+    @staticmethod
+    def initSingleSpinBox(widget, minv, maxv, val, step):
+        widget.setRange(minv, maxv)
+        widget.setValue(val)
+        widget.setSingleStep(step)
 
+    def initSpinBox(self):
+        Port.initSingleSpinBox(self.editTriggerDuration, 100, 5000, 100, 100)
+        Port.initSingleSpinBox(self.editTriggerPosition, 1, 1000, 500, 50)
+        Port.initSingleSpinBox(self.editTriggerWindow, 0, 999, 100, 50)
+        Port.initSingleSpinBox(self.editTriggerRetention, 50, 10000, 3000, 500)
         self.setButtonAction()
 
     def portSwitchAction(self, checked):

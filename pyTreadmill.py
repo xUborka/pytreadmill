@@ -33,7 +33,7 @@ class Window(QWidget):
         self.readThread.treadmillStateChanged.connect(self.changePlotColor)
 
         # List for storing connected treadmills
-        self.treadmillList = []
+        self.treadmillList = list()
         self.portList = list()
 
         # Plot resources
@@ -75,10 +75,7 @@ class Window(QWidget):
         # -------- A, B, C ports settings --------
         # Port A Widgets
         self.portA = Port("A", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
-        self.portA.setSpinBox("triggerDuration", 100, 5000, 100, 100)
-        self.portA.setSpinBox("triggerPosition", 1, 1000, 500, 50)
-        self.portA.setSpinBox("triggerWindow", 0, 999, 100, 50)
-        self.portA.setSpinBox("triggerRetention", 50, 10000, 3000, 500)
+        self.portA.initSpinBox()
         # self.portA.positionTriggerChangedSignal.connect(self.readthread.updatePositionTriggerData)
 
         # Port A Layout
@@ -103,10 +100,7 @@ class Window(QWidget):
 
         # Port B Widgets
         self.portB = Port("B", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
-        self.portB.setSpinBox("triggerDuration", 100, 5000, 100, 100)
-        self.portB.setSpinBox("triggerPosition", 1, 1000, 500, 50)
-        self.portB.setSpinBox("triggerWindow", 0, 999, 100, 50)
-        self.portB.setSpinBox("triggerRetention", 50, 10000, 3000, 500)
+        self.portB.initSpinBox()
         # self.portB.positionTriggerChangedSignal.connect(self.readthread.updatePositionTriggerData)
 
         # Port B Layout
@@ -131,10 +125,7 @@ class Window(QWidget):
 
         # Port C Widgets
         self.portC = Port("C", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
-        self.portC.setSpinBox("triggerDuration", 100, 5000, 100, 100)
-        self.portC.setSpinBox("triggerPosition", 1, 1000, 500, 50)
-        self.portC.setSpinBox("triggerWindow", 0, 999, 100, 50)
-        self.portC.setSpinBox("triggerRetention", 50, 10000, 3000, 500)
+        self.portC.initSpinBox()
         # self.portC.positionTriggerChangedSignal.connect(self.readthread.updatePositionTriggerData)
 
         # Port C Layout

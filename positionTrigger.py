@@ -4,13 +4,13 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer, QObject
 class PositionTriggerData:
     def __init__(self, port):
         self.port = port
-        self.thread: QThread
+        self.thread = QThread()
         self.isActive = False
 
-        self.start: int
-        self.window: int
-        self.retention: int
-        self.duration: int
+        self.start = 0
+        self.window = 0
+        self.retention = 0
+        self.duration = 0
 
 
 class PositionTriggerWorker(QObject):
@@ -22,7 +22,6 @@ class PositionTriggerWorker(QObject):
         super(PositionTriggerWorker, self).__init__(parent)
 
         self.positionTriggerData = positionTriggerData
-        self.getTreadmillData = positionTriggerData.port.getTreadmillData
 
         self.isRunning = True
         self.isSingleShot = True
@@ -59,7 +58,7 @@ class PositionTriggerWorker(QObject):
         self.triggerTimer.setInterval(self.positionTriggerData.retention)
 
     def checkPosition(self):
-        treadmillData = self.getTreadmillData()
+        treadmillData = self.positionTriggerData.port.getTreadmillData()
         if treadmillData.relPosition < self.positionTriggerData.start \
                 or treadmillData.relPosition > (self.positionTriggerData.start + self.positionTriggerData.window):
             self.terminate()
