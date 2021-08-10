@@ -68,14 +68,14 @@ class Treadmill(QObject):
     # 	if len(arduinoPorts) > 1: print("Warning: Multiple Treadmills found - using the first")
     # 	self.connect(arduinoPorts[0])
 
-    def setConnectionState(self, init_state):
-        self.connected = init_state
+    def setConnectionState(self, state: bool):
+        self.connected = state
 
-    def setInitializationState(self, init_state):
-        self.initialized = init_state
+    def setInitializationState(self, state: bool):
+        self.initialized = state
 
-    def setRecordingState(self, init_state):
-        self.recording = init_state
+    def setRecordingState(self, state: bool):
+        self.recording = state
 
     def updateTreadmillState(self):
         if self.treadmillData.initialized != self.initialized:
@@ -96,38 +96,18 @@ class Treadmill(QObject):
             serialInput = serialInput.decode(encoding='ascii')
             serialInput = serialInput.rstrip()
             self.treadmillData = TreadmillData(*serialInput.split(" "))
-
         except serial.SerialException as e:
-            print(e)
-            print("Treadmill uplugged")
-            if self.logFilename is not None:
-                GTools.log_error(self.logFilename, str(e) + " Treadmill unplugged")
-
+            GTools.error_message("Treadmill unplugged", e)
             self.connectionSignal.emit(False)
             self.treadmillData.invalidate()
-            self.updateTreadmillState()
-            return self.treadmillData
-
         except (ValueError, UnicodeDecodeError) as e:
-            print(e)
-            print("Serial communication error")
-            if self.logFilename is not None:
-                GTools.log_error(self.logFilename, str(e) + " Serial communication error")
-
+            GTools.error_message("Serial communication error", e)
             self.treadmillData.invalidate()
-            self.updateTreadmillState()
-            return self.treadmillData
-
         except Exception as e:
-            print(e)
-            print("Unknown error during reading serial data.")
+            GTools.error_message("Unknown error during reading serial data", e)
             self.treadmillData.invalidate()
-            self.updateTreadmillState()
-            return self.treadmillData
-
-        else:
-            self.updateTreadmillState()
-            return self.treadmillData
+        self.updateTreadmillState()
+        return self.treadmillData
 
     def writeData(self, data):
         self.serialObject.write(bytes(data, 'ascii'))
