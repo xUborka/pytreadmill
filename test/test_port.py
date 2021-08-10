@@ -3,7 +3,7 @@ from Port import Port
 from pyTreadmill import Window
 
 
-def test_empty_init(qtbot):
+def test_empty_init():
     pass
 #     dummy_window = Window()
 #     qtbot.addWidget(dummy_window)
