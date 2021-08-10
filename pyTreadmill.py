@@ -42,6 +42,29 @@ class Window(QWidget):
         self.plotTimer.timeout.connect(self.updatePlot)
 
         self.initUI()
+    
+    @staticmethod
+    def initPortUI(portWidget):
+        layoutPort = QHBoxLayout()
+        layoutPort.addWidget(portWidget.label)
+        layoutPort.addWidget(portWidget.editLabel)
+        layoutPort.addWidget(portWidget.switchButton)
+        layoutPort.addWidget(portWidget.editTriggerDuration)
+        layoutPort.addWidget(portWidget.pulseButton)
+
+        layoutPortPositionTrigger = QHBoxLayout()
+        layoutPortPositionTrigger.addWidget(portWidget.pulseRepetitionButton)
+        layoutPortPositionTrigger.addWidget(portWidget.editTriggerPosition)
+        layoutPortPositionTrigger.addWidget(portWidget.editTriggerWindow)
+        layoutPortPositionTrigger.addWidget(portWidget.editTriggerRetention)
+        layoutPortPositionTrigger.addWidget(portWidget.setButton)
+        layoutPortPositionTrigger.addWidget(portWidget.restoreButton)
+        portWidget.groupboxPositionTrigger.setLayout(layoutPortPositionTrigger)
+        portWidget.groupboxPositionTrigger.setChecked(False)
+
+        layoutPort.addWidget(portWidget.groupboxPositionTrigger)
+
+        return layoutPort
 
     def initUI(self):
         self.setWindowTitle('pyTreadmill')
@@ -56,7 +79,7 @@ class Window(QWidget):
         self.treadmillListDropdown = QComboBox()
 
         # Button - Refresh treadmill list
-        findTreadmillsButton = QPushButton("", )
+        findTreadmillsButton = QPushButton("")
         findTreadmillsButton.setIcon(QIcon(os.getcwd() + '/res/refresh16.png'))
         findTreadmillsButton.setIconSize(QSize(16, 16))
         findTreadmillsButton.clicked.connect(self.getTreadmills)
@@ -76,77 +99,17 @@ class Window(QWidget):
         # Port A Widgets
         self.portA = Port("A", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
         self.portA.initSpinBox()
-        # self.portA.positionTriggerChangedSignal.connect(self.readthread.updatePositionTriggerData)
-
-        # Port A Layout
-        layoutPortA = QHBoxLayout()
-        layoutPortA.addWidget(self.portA.label)
-        layoutPortA.addWidget(self.portA.editLabel)
-        layoutPortA.addWidget(self.portA.switchButton)
-        layoutPortA.addWidget(self.portA.editTriggerDuration)
-        layoutPortA.addWidget(self.portA.pulseButton)
-
-        layoutPortAPositionTrigger = QHBoxLayout()
-        layoutPortAPositionTrigger.addWidget(self.portA.pulseRepetitionButton)
-        layoutPortAPositionTrigger.addWidget(self.portA.editTriggerPosition)
-        layoutPortAPositionTrigger.addWidget(self.portA.editTriggerWindow)
-        layoutPortAPositionTrigger.addWidget(self.portA.editTriggerRetention)
-        layoutPortAPositionTrigger.addWidget(self.portA.setButton)
-        layoutPortAPositionTrigger.addWidget(self.portA.restoreButton)
-        self.portA.groupboxPositionTrigger.setLayout(layoutPortAPositionTrigger)
-        self.portA.groupboxPositionTrigger.setChecked(False)
-
-        layoutPortA.addWidget(self.portA.groupboxPositionTrigger)
+        layoutPortA = Port.initPortUI(self.portA)
 
         # Port B Widgets
         self.portB = Port("B", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
         self.portB.initSpinBox()
-        # self.portB.positionTriggerChangedSignal.connect(self.readthread.updatePositionTriggerData)
-
-        # Port B Layout
-        layoutPortB = QHBoxLayout()
-        layoutPortB.addWidget(self.portB.label)
-        layoutPortB.addWidget(self.portB.editLabel)
-        layoutPortB.addWidget(self.portB.switchButton)
-        layoutPortB.addWidget(self.portB.editTriggerDuration)
-        layoutPortB.addWidget(self.portB.pulseButton)
-
-        layoutPortBPositionTrigger = QHBoxLayout()
-        layoutPortBPositionTrigger.addWidget(self.portB.pulseRepetitionButton)
-        layoutPortBPositionTrigger.addWidget(self.portB.editTriggerPosition)
-        layoutPortBPositionTrigger.addWidget(self.portB.editTriggerWindow)
-        layoutPortBPositionTrigger.addWidget(self.portB.editTriggerRetention)
-        layoutPortBPositionTrigger.addWidget(self.portB.setButton)
-        layoutPortBPositionTrigger.addWidget(self.portB.restoreButton)
-        self.portB.groupboxPositionTrigger.setLayout(layoutPortBPositionTrigger)
-        self.portB.groupboxPositionTrigger.setChecked(False)
-
-        layoutPortB.addWidget(self.portB.groupboxPositionTrigger)
+        layoutPortB = Port.initPortUI(self.portB)
 
         # Port C Widgets
         self.portC = Port("C", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
         self.portC.initSpinBox()
-        # self.portC.positionTriggerChangedSignal.connect(self.readthread.updatePositionTriggerData)
-
-        # Port C Layout
-        layoutPortC = QHBoxLayout()
-        layoutPortC.addWidget(self.portC.label)
-        layoutPortC.addWidget(self.portC.editLabel)
-        layoutPortC.addWidget(self.portC.switchButton)
-        layoutPortC.addWidget(self.portC.editTriggerDuration)
-        layoutPortC.addWidget(self.portC.pulseButton)
-
-        layoutPortCPositionTrigger = QHBoxLayout()
-        layoutPortCPositionTrigger.addWidget(self.portC.pulseRepetitionButton)
-        layoutPortCPositionTrigger.addWidget(self.portC.editTriggerPosition)
-        layoutPortCPositionTrigger.addWidget(self.portC.editTriggerWindow)
-        layoutPortCPositionTrigger.addWidget(self.portC.editTriggerRetention)
-        layoutPortCPositionTrigger.addWidget(self.portC.setButton)
-        layoutPortCPositionTrigger.addWidget(self.portC.restoreButton)
-        self.portC.groupboxPositionTrigger.setLayout(layoutPortCPositionTrigger)
-        self.portC.groupboxPositionTrigger.setChecked(False)
-
-        layoutPortC.addWidget(self.portC.groupboxPositionTrigger)
+        layoutPortC = Port.initPortUI(self.portC)
 
         # Layout for All Port Layouts
         layoutAllPorts = QVBoxLayout()
@@ -162,8 +125,6 @@ class Window(QWidget):
         self.containerArduinoIO = QWidget()
         self.layoutArduinoIO = QHBoxLayout(self.containerArduinoIO)
         self.layoutArduinoIO.addWidget(groupboxAllPorts)
-        # self.layoutArduinoIO.addLayout(layout_RewardAndReset)
-        # self.containerArduinoIO.setEnabled(False)
 
         self.treadmillDataPrinter = QPlainTextEdit()
         self.treadmillDataPrinter.setObjectName("treadmillData")
@@ -176,7 +137,6 @@ class Window(QWidget):
         self.plotWidget.setEnabled(False)
         self.velocityCurve = self.plotWidget.plot()
         self.velocityCurve.setPen(color='y', width=self.plotPenWidth)
-        # self.plotWidget.enableMouse(True)
         self.plotWidget.setYRange(-20, 20)
         self.plotWidget.setLabel('left', 'velocity', '-')
         self.plotWidget.showAxis('bottom', False)

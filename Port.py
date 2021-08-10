@@ -41,18 +41,6 @@ class Port(QWidget):
         self.getPositionTriggerData()
         appendPortList(self.positionTriggerData)
 
-        self.portDictionary = {
-            "switchButton":        self.switchButton,
-            "pulseButton":         self.pulseButton,
-            "triggerDuration":     self.editTriggerDuration,
-            "triggerPosition":     self.editTriggerPosition,
-            "triggerWindow":       self.editTriggerWindow,
-            "triggerRetention":    self.editTriggerRetention,
-            "timer":               self.pulseTimer,
-            "onString":            self.name,
-            "offString":           self.name.lower()
-        }
-
     def setUIElements(self):
         self.editLabel.setPlaceholderText("port " + self.name)
 
@@ -123,14 +111,14 @@ class Port(QWidget):
             self.switchButton.setStyleSheet("color: white;"
                                             "background-color: green;")
             self.pulseButton.setDisabled(True)
-            self.treadmill.writeData(self.portDictionary["onString"])
+            self.treadmill.writeData(self.name)
         else:
             self.switchButton.setText("OFF")
             self.switchButton.setStyleSheet("color: white;"
                                             "background-color: red;")
             self.pulseButton.setDisabled(False)
             self.pulseTimer.stop()
-            self.treadmill.writeData(self.portDictionary["offString"])
+            self.treadmill.writeData(self.name.lower())
 
     def pulseSignalAction(self):
         pulseInterval = self.editTriggerDuration.value()
