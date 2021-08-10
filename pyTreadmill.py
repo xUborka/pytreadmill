@@ -42,7 +42,7 @@ class Window(QWidget):
         self.plotTimer.timeout.connect(self.updatePlot)
 
         self.initUI()
-    
+
     @staticmethod
     def initPortUI(portWidget):
         layoutPort = QHBoxLayout()

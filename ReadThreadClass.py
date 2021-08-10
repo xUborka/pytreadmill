@@ -31,7 +31,7 @@ class ReadThreadClass(QThread):
 
     def appendData2Lists(self):
         self.treadmill_data_list.append(self.treadmillData)
-    
+
     def printData2GUI(self, prefix):
         self.printDataSignal.emit(prefix +
                                   "   |   v = " + str(self.treadmillData.velocity) +
@@ -47,8 +47,8 @@ class ReadThreadClass(QThread):
                     if not portListInstance.thread.isRunning():
                         if portListInstance.start <= position <= (portListInstance.start + portListInstance.window):
                             portListInstance.thread.start()
-            except:
-                pass
+            except Exception as e:
+                print(e)
 
     def checkPortStates(self):
         for portListInstance, portState in zip(self.portList, self.treadmillData.portStates):

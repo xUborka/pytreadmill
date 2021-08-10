@@ -2,9 +2,9 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer, QObject
 
 
 class PositionTriggerData:
-    def __init__(self, port = None):
+    def __init__(self, port=None):
         self.port = port
-        self.thread : QThread = None
+        self.thread: QThread = None
         self.isActive = False
 
         self.start = 0

@@ -1,4 +1,4 @@
-from Port import Port
+# from Port import Port
 from pyTreadmill import Window
 
 
@@ -7,4 +7,4 @@ def test_empty_init(qtbot):
     dummy_window = Window()
     qtbot.addWidget(dummy_window)
     # dummy_port = Port('A', None, None, None)
-    assert True
+    assert dummy_window.windowTitle() == 'pyTreadmill'

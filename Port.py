@@ -137,7 +137,7 @@ class Port(QWidget):
             spinBox.setStyleSheet("background-color: yellow;")
         else:
             spinBox.setStyleSheet("background-color: white;")
-    
+
     def getPulseDuration(self):
         self.positionTriggerData.duration = self.editTriggerDuration.value()
 

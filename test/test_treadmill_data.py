@@ -1,6 +1,7 @@
 import unittest
 from treadmill_data import TreadmillData
 
+
 class TestTreadmillData(unittest.TestCase):
     def test_empty_init(self):
         tmd = TreadmillData()
@@ -13,7 +14,7 @@ class TestTreadmillData(unittest.TestCase):
         self.assertEqual(tmd.lick, 0)
         self.assertEqual(tmd.initialized, 0)
         self.assertListEqual(tmd.portStates, [0, 0, 0])
-    
+
     def test_init_with_values(self):
         tmd = TreadmillData(1, 2, 3, 4, 5, 6, 7, 8, [1, 2, 3])
         self.assertEqual(tmd.time, 1)
@@ -25,7 +26,7 @@ class TestTreadmillData(unittest.TestCase):
         self.assertEqual(tmd.lick, 7)
         self.assertEqual(tmd.initialized, 8)
         self.assertListEqual(tmd.portStates, [1, 2, 3])
-    
+
     def test_invalidate(self):
         tmd = TreadmillData(1, 2, 3, 4, 5, 6, 7, 8, [1, 2, 3])
         tmd.invalidate()
@@ -38,7 +39,7 @@ class TestTreadmillData(unittest.TestCase):
         self.assertEqual(tmd.lick, 0)
         self.assertEqual(tmd.initialized, 0)
         self.assertListEqual(tmd.portStates, [0, 0, 0])
-    
+
     def test_to_string(self):
         tmd = TreadmillData(1, 2, 3, 4, 5, 6, 7, 8, [1, 2, 3])
         # 2 = Recording
