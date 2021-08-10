@@ -1,4 +1,3 @@
-import pytest
 from Port import Port
 from pyTreadmill import Window
 
