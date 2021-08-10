@@ -18,7 +18,6 @@ class Treadmill(QObject):
         self.recording = False
 
         self.treadmillData = TreadmillData()
-        self.logFilename = None
 
         self.serialObject = None
 
@@ -56,17 +55,6 @@ class Treadmill(QObject):
         self.serialObject.close()
         self.connectionSignal.emit(False)
         print("Serial connection terminated.")
-
-    # def autoConnect(self):
-    # 	arduinoPorts = self.findTreadmills()
-    # 	while not arduinoPorts:
-    # 		print("Error: No Treadmill found. Please connect one.")
-    # 		if self.logFilename is not None: GTools.log_error(self.logFilename, "No Treadmill found")
-    # 		print("Retry in 5 seconds...\n")
-    # 		sleep(5)
-    # 		arduinoPorts = self.findTreadmills()
-    # 	if len(arduinoPorts) > 1: print("Warning: Multiple Treadmills found - using the first")
-    # 	self.connect(arduinoPorts[0])
 
     def setConnectionState(self, state: bool):
         self.connected = state

@@ -75,7 +75,6 @@ class Port(QWidget):
             lambda: self.valueChanged(self.editTriggerRetention, self.positionTriggerData.retention))
 
         self.setButton.clicked.connect(self.setButtonAction)
-
         self.restoreButton.clicked.connect(self.restoreButtonAction)
 
         self.groupboxPositionTrigger.setCheckable(True)
