@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QLabel,\
     QSpinBox, QGroupBox
 from positionTrigger import PositionTriggerWorker
