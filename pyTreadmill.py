@@ -8,14 +8,10 @@ from Treadmill import Treadmill
 from Port import Port
 from ReadThreadClass import ReadThreadClass
 from gtools import GTools
-import pyqtgraph as pg
-import numpy as np
-import time
+from widgets.plotWidget import PlotWidget
 
 
 class Window(QWidget):
-    plotPenWidth = 3
-
     def __init__(self):
         # Window
         super(Window, self).__init__()
@@ -37,7 +33,6 @@ class Window(QWidget):
         self.portList = list()
 
         # Plot resources
-        self.velocityPlotList = np.zeros(1000)
         self.plotTimer = QTimer(self)
         self.plotTimer.timeout.connect(self.updatePlot)
 
@@ -46,29 +41,6 @@ class Window(QWidget):
         # Init folder & treadmills
         self.selectFolder()
         self.getTreadmills()
-
-    @staticmethod
-    def initPortUI(portWidget):
-        layoutPort = QHBoxLayout()
-        layoutPort.addWidget(portWidget.label)
-        layoutPort.addWidget(portWidget.editLabel)
-        layoutPort.addWidget(portWidget.switchButton)
-        layoutPort.addWidget(portWidget.editTriggerDuration)
-        layoutPort.addWidget(portWidget.pulseButton)
-
-        layoutPortPositionTrigger = QHBoxLayout()
-        layoutPortPositionTrigger.addWidget(portWidget.pulseRepetitionButton)
-        layoutPortPositionTrigger.addWidget(portWidget.editTriggerPosition)
-        layoutPortPositionTrigger.addWidget(portWidget.editTriggerWindow)
-        layoutPortPositionTrigger.addWidget(portWidget.editTriggerRetention)
-        layoutPortPositionTrigger.addWidget(portWidget.setButton)
-        layoutPortPositionTrigger.addWidget(portWidget.restoreButton)
-        portWidget.groupboxPositionTrigger.setLayout(layoutPortPositionTrigger)
-        portWidget.groupboxPositionTrigger.setChecked(False)
-
-        layoutPort.addWidget(portWidget.groupboxPositionTrigger)
-
-        return layoutPort
 
     def initUI(self):
         self.setWindowTitle('pyTreadmill')
@@ -101,20 +73,17 @@ class Window(QWidget):
 
         # -------- A, B, C ports settings --------
         # Port A Widgets
-        self.portA = Port("A", self.appendPortList,
-                          self.readThread.getTreadmillData, self.treadmill)
+        self.portA = Port("A", self.appendPortList,self.readThread.getTreadmillData, self.treadmill)
         self.portA.initSpinBox()
         layoutPortA = Window.initPortUI(self.portA)
 
         # Port B Widgets
-        self.portB = Port("B", self.appendPortList,
-                          self.readThread.getTreadmillData, self.treadmill)
+        self.portB = Port("B", self.appendPortList,self.readThread.getTreadmillData, self.treadmill)
         self.portB.initSpinBox()
         layoutPortB = Window.initPortUI(self.portB)
 
         # Port C Widgets
-        self.portC = Port("C", self.appendPortList,
-                          self.readThread.getTreadmillData, self.treadmill)
+        self.portC = Port("C", self.appendPortList,self.readThread.getTreadmillData, self.treadmill)
         self.portC.initSpinBox()
         layoutPortC = Window.initPortUI(self.portC)
 
@@ -139,17 +108,7 @@ class Window(QWidget):
         self.treadmillDataPrinter.setOverwriteMode(True)
         self.treadmillDataPrinter.setMaximumHeight(30)
 
-        self.plotWidget = pg.PlotWidget(name='velocity plot')
-        self.plotWidget.setMinimumSize(self.plotWidget.minimumWidth(), 300)
-        self.plotWidget.setEnabled(False)
-        self.velocityCurve = self.plotWidget.plot()
-        self.velocityCurve.setPen(color='y', width=self.plotPenWidth)
-        self.plotWidget.setYRange(-20, 20)
-        self.plotWidget.setLabel('left', 'velocity', '-')
-        self.plotWidget.showAxis('bottom', False)
-        self.plotWidget.showGrid(x=True, y=True)
-        self.plotText = pg.TextItem(text='test', color='w', anchor=(1, 1.5))
-        self.plotWidget.addItem(self.plotText)
+        self.plotWidget = PlotWidget()
 
         levelOneLayout = QHBoxLayout()
         levelOneLayout.addWidget(self.browseButton)
@@ -161,7 +120,6 @@ class Window(QWidget):
         mainLayout.addLayout(levelOneLayout)
         mainLayout.addWidget(self.mainConsole)
         mainLayout.addWidget(self.containerArduinoIO)
-        # mainLayout.addWidget(self.treadmillDataPrinter)
         mainLayout.addWidget(self.plotWidget)
 
         self.setLayout(mainLayout)
@@ -169,6 +127,29 @@ class Window(QWidget):
         # FINALIZE
         self.show()
         self.setMaximumWidth(self.width())
+
+    @staticmethod
+    def initPortUI(portWidget):
+        layoutPort = QHBoxLayout()
+        layoutPort.addWidget(portWidget.label)
+        layoutPort.addWidget(portWidget.editLabel)
+        layoutPort.addWidget(portWidget.switchButton)
+        layoutPort.addWidget(portWidget.editTriggerDuration)
+        layoutPort.addWidget(portWidget.pulseButton)
+
+        layoutPortPositionTrigger = QHBoxLayout()
+        layoutPortPositionTrigger.addWidget(portWidget.pulseRepetitionButton)
+        layoutPortPositionTrigger.addWidget(portWidget.editTriggerPosition)
+        layoutPortPositionTrigger.addWidget(portWidget.editTriggerWindow)
+        layoutPortPositionTrigger.addWidget(portWidget.editTriggerRetention)
+        layoutPortPositionTrigger.addWidget(portWidget.setButton)
+        layoutPortPositionTrigger.addWidget(portWidget.restoreButton)
+        portWidget.groupboxPositionTrigger.setLayout(layoutPortPositionTrigger)
+        portWidget.groupboxPositionTrigger.setChecked(False)
+
+        layoutPort.addWidget(portWidget.groupboxPositionTrigger)
+
+        return layoutPort
 
     def openDialog(self, questionObject, callback):
         questionString = "Are you sure you want to {0}?".format(questionObject)
@@ -247,45 +228,19 @@ class Window(QWidget):
     def appendPortList(self, positionTriggerData):
         self.portList.append(positionTriggerData)
 
-    def updateVelocityPlotList(self):
-        self.velocityPlotList[:-1] = self.velocityPlotList[1:]
-        self.velocityPlotList[-1] = self.readThread.treadmillData.velocity
-
     def enableVelocityPlot(self, enable):
         if enable:
-            self.plotWidget.setEnabled = True
-            self.velocityCurve.setData(self.velocityPlotList)
+            self.plotWidget.enable()
             self.plotTimer.start(5)
         else:
             self.plotTimer.stop()
-            self.plotWidget.setEnabled = False
+            self.plotWidget.disable()
 
     def updatePlot(self):
-        self.updateVelocityPlotList()
-        self.velocityCurve.setData(self.velocityPlotList)
-        self.velocityCurve.setPos(-1000, 0)
-        self.updatePlotText()
-
-    def updatePlotText(self):
-        treadmillTime = time.strftime("%M:%S", time.gmtime(
-            int(self.readThread.treadmillData.time) / 1000))
-        tmpPlotText = str("time: " + treadmillTime + "\n" +
-                          "velocity: " + str(self.readThread.treadmillData.velocity) + "\n" +
-                          "abs. position: " + str(self.readThread.treadmillData.absPosition) + "\n" +
-                          "lap: " + str(self.readThread.treadmillData.lap) + "\n" +
-                          "rel. position: " + str(self.readThread.treadmillData.relPosition) + "\n")
-        if self.treadmill.recording:
-            tmpPlotText = str(tmpPlotText + "🔴 REC")
-        self.plotText.setText(text=tmpPlotText)
+        self.plotWidget.update_plot(self.readThread.treadmillData, self.treadmill.recording)
 
     def changePlotColor(self):
-        if self.treadmill.initialized:
-            if self.treadmill.recording:
-                self.velocityCurve.setPen(color='r', width=self.plotPenWidth)
-            else:
-                self.velocityCurve.setPen(color='w', width=self.plotPenWidth)
-        else:
-            self.velocityCurve.setPen(color='y', width=self.plotPenWidth)
+        self.plotWidget.update_color(self.treadmill)
 
     def closeApplication(self):
         choice = QMessageBox.question(self, 'Message',
@@ -293,13 +248,12 @@ class Window(QWidget):
                                       QMessageBox.No, QMessageBox.No)
 
         if choice == QMessageBox.Yes:
-            # print('quit application')
             sys.exit()
         else:
             pass
 
 
-if __name__ == "__main__":  # had to add this otherwise app crashed
+if __name__ == "__main__": 
     app = QApplication(sys.argv)
     Gui = Window()
     sys.exit(app.exec_())
