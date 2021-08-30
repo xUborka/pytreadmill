@@ -11,8 +11,8 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    container: fadawar/docker-pyqt5:latest
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.9
