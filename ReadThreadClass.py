@@ -76,7 +76,7 @@ class ReadThreadClass(QThread):
 
         self.emptyLists()
         self.messageSignal.emit("Waiting for trigger...")
-        
+
         while self.running and self.treadmill.connected:
             self.treadmillData = self.treadmill.readData()
             self.printData2GUI("")

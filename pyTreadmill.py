@@ -43,6 +43,10 @@ class Window(QWidget):
 
         self.initUI()
 
+        # Init folder & treadmills
+        self.selectFolder()
+        self.getTreadmills()
+
     @staticmethod
     def initPortUI(portWidget):
         layoutPort = QHBoxLayout()
@@ -97,17 +101,20 @@ class Window(QWidget):
 
         # -------- A, B, C ports settings --------
         # Port A Widgets
-        self.portA = Port("A", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
+        self.portA = Port("A", self.appendPortList,
+                          self.readThread.getTreadmillData, self.treadmill)
         self.portA.initSpinBox()
         layoutPortA = Window.initPortUI(self.portA)
 
         # Port B Widgets
-        self.portB = Port("B", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
+        self.portB = Port("B", self.appendPortList,
+                          self.readThread.getTreadmillData, self.treadmill)
         self.portB.initSpinBox()
         layoutPortB = Window.initPortUI(self.portB)
 
         # Port C Widgets
-        self.portC = Port("C", self.appendPortList, self.readThread.getTreadmillData, self.treadmill)
+        self.portC = Port("C", self.appendPortList,
+                          self.readThread.getTreadmillData, self.treadmill)
         self.portC.initSpinBox()
         layoutPortC = Window.initPortUI(self.portC)
 
@@ -184,13 +191,14 @@ class Window(QWidget):
         with open(path, 'r') as file:
             saveFolder = file.read()
         if os.path.isdir(saveFolder):
-            self.readThread.saveFolder = str(QFileDialog.getExistingDirectory(self, "Select Directory", saveFolder))
+            self.readThread.saveFolder = saveFolder
         else:
             self.readThread.saveFolder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
         if self.readThread.saveFolder:
             GTools.updateSaveFolder(self.readThread.saveFolder)
-            self.print2Console("Save folder set to: \n " + self.readThread.saveFolder + "\n")
+            self.print2Console("Save folder set to: \n " +
+                               self.readThread.saveFolder + "\n")
         else:
             self.readThread.saveFolder = None
             self.print2Console("No valid save folder was set.")
@@ -224,7 +232,8 @@ class Window(QWidget):
 
     def connectButtonAction(self):
         if not self.readThread.running:
-            self.print2Console("Connecting to treadmill on port " + self.treadmillListDropdown.currentData(0) + ".")
+            self.print2Console("Connecting to treadmill on port " +
+                               self.treadmillListDropdown.currentData(0) + ".")
             self.treadmill.connect(self.treadmillListDropdown.currentData(0))
         else:
             self.treadmill.closeConnection()
@@ -258,7 +267,8 @@ class Window(QWidget):
         self.updatePlotText()
 
     def updatePlotText(self):
-        treadmillTime = time.strftime("%M:%S", time.gmtime(int(self.readThread.treadmillData.time) / 1000))
+        treadmillTime = time.strftime("%M:%S", time.gmtime(
+            int(self.readThread.treadmillData.time) / 1000))
         tmpPlotText = str("time: " + treadmillTime + "\n" +
                           "velocity: " + str(self.readThread.treadmillData.velocity) + "\n" +
                           "abs. position: " + str(self.readThread.treadmillData.absPosition) + "\n" +
