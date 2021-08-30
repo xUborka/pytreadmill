@@ -8,7 +8,7 @@ from Treadmill import Treadmill
 from Port import Port
 from ReadThreadClass import ReadThreadClass
 from gtools import GTools
-from widgets.plotWidget import PlotWidget
+from widgets.plot_widget import PlotWidget
 
 
 class Window(QWidget):
