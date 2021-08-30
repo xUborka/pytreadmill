@@ -253,7 +253,7 @@ class Window(QWidget):
             pass
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     Gui = Window()
     sys.exit(app.exec_())
