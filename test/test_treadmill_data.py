@@ -1,5 +1,5 @@
 import unittest
-from treadmill_data import TreadmillData
+from interfaces.treadmill_data import TreadmillData
 
 
 class TestTreadmillData(unittest.TestCase):

@@ -2,7 +2,7 @@ import serial
 import serial.tools.list_ports
 from PyQt5.QtCore import QObject, pyqtSignal
 from gtools import GTools
-from treadmill_data import TreadmillData
+from interfaces.treadmill_data import TreadmillData
 
 
 class Treadmill(QObject):

@@ -1,8 +1,7 @@
-from positionTrigger import PositionTriggerWorker
 import time
 from PyQt5.QtCore import QThread, pyqtSignal
 from gtools import GTools
-from treadmill_data import TreadmillData
+from interfaces.treadmill_data import TreadmillData
 
 
 class ReadThreadClass(QThread):
