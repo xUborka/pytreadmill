@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QLabel,\
     QSpinBox, QGroupBox
 from positionTrigger import PositionTriggerData, PositionTriggerWorker
@@ -7,16 +7,18 @@ from positionTrigger import PositionTriggerData, PositionTriggerWorker
 class Port(QWidget):
     positionTriggerChangedSignal = pyqtSignal(object)
 
-    def __init__(self, name, appendPortList, getTreadmillData, treadmill):
+    def __init__(self, name, port_list, treadmill_data, treadmill):
         super(Port, self).__init__()
         self.name = name
         self.treadmill = treadmill
-        self.getTreadmillData = getTreadmillData
+        self.treadmill_data = treadmill_data
         self.positionTriggerData = PositionTriggerData(self)
+
+        self.clicked = True
 
         # create worker thread
         self.worker = PositionTriggerWorker(self.positionTriggerData)
-        self.initThread()
+        self.worker.triggerSignal.connect(self.pulseSignalAction)
         self.positionTriggerChangedSignal.connect(self.worker.updateTriggerInterval)
 
         # initialize UI elements
@@ -39,15 +41,15 @@ class Port(QWidget):
 
         # update and send data about port instance to main thread
         self.getPositionTriggerData()
-        appendPortList(self.positionTriggerData)
+        self.init_spinbox()
+        port_list.append(self.positionTriggerData)
 
     def setUIElements(self):
         self.editLabel.setPlaceholderText("port " + self.name)
 
         self.switchButton.setStyleSheet("color: white;" "background-color: red")
-        self.switchButton.setCheckable(True)
-        self.switchButton.toggled.connect(self.portSwitchAction)
-        self.pulseTimer.timeout.connect(lambda: self.switchButton.setChecked(False))
+        self.switchButton.clicked.connect(self.portSwitchAction)
+        self.pulseTimer.timeout.connect(self.portSwitchAction)
 
         self.editTriggerDuration.setAlignment(Qt.AlignRight)
         self.editTriggerDuration.setSuffix(" ms")
@@ -80,49 +82,38 @@ class Port(QWidget):
         self.groupboxPositionTrigger.setCheckable(True)
         self.groupboxPositionTrigger.toggled.connect(self.groupboxToggleAction)
         self.groupboxPositionTrigger.setChecked(False)
-        # self.enableChildrenWidgets(self.groupboxPositionTrigger)
-
-    def initThread(self):
-        self.positionTriggerData.thread = QThread(self)
-        self.worker.moveToThread(self.positionTriggerData.thread)
-        self.positionTriggerData.thread.started.connect(self.worker.process)
-        self.worker.finished.connect(self.positionTriggerData.thread.quit)
-        self.worker.triggerSignal.connect(self.pulseSignalAction)
-        # self.worker.finished.connect(self.worker.deleteLater)
-        # self.positionTriggerData.thread.finished.connect(self.positionTriggerData.thread.deleteLater)
 
     @staticmethod
-    def initSingleSpinBox(widget, minv, maxv, val, step):
+    def init_single_spinbox(widget, minv, maxv, val, step):
         widget.setRange(minv, maxv)
         widget.setValue(val)
         widget.setSingleStep(step)
 
-    def initSpinBox(self):
-        Port.initSingleSpinBox(self.editTriggerDuration, 100, 5000, 100, 100)
-        Port.initSingleSpinBox(self.editTriggerPosition, 1, 1000, 500, 50)
-        Port.initSingleSpinBox(self.editTriggerWindow, 0, 999, 100, 50)
-        Port.initSingleSpinBox(self.editTriggerRetention, 50, 10000, 3000, 500)
+    def init_spinbox(self):
+        Port.init_single_spinbox(self.editTriggerDuration, 100, 5000, 100, 100)
+        Port.init_single_spinbox(self.editTriggerPosition, 1, 1000, 500, 50)
+        Port.init_single_spinbox(self.editTriggerWindow, 0, 999, 100, 50)
+        Port.init_single_spinbox(self.editTriggerRetention, 50, 10000, 3000, 500)
         self.setButtonAction()
 
-    def portSwitchAction(self, checked):
-        if checked:
+    def portSwitchAction(self):
+        if self.clicked:
             self.switchButton.setText("ON")
-            self.switchButton.setStyleSheet("color: white;"
-                                            "background-color: green;")
+            self.switchButton.setStyleSheet("color: white; background-color: green;")
             self.pulseButton.setDisabled(True)
             self.treadmill.writeData(self.name)
+            self.clicked = False
         else:
             self.switchButton.setText("OFF")
-            self.switchButton.setStyleSheet("color: white;"
-                                            "background-color: red;")
+            self.switchButton.setStyleSheet("color: white; background-color: red;")
             self.pulseButton.setDisabled(False)
             self.pulseTimer.stop()
             self.treadmill.writeData(self.name.lower())
+            self.clicked = True
 
     def pulseSignalAction(self):
-        pulseInterval = self.editTriggerDuration.value()
-        self.pulseTimer.start(pulseInterval)
-        self.switchButton.setChecked(True)
+        print("PULSE")
+        self.pulseTimer.start(self.editTriggerDuration.value())
 
     def pulseRepetitionButtonAction(self, checked):
         if checked:
@@ -161,9 +152,11 @@ class Port(QWidget):
         self.editTriggerRetention.setValue(self.positionTriggerData.retention)
 
     def groupboxToggleAction(self, isToggled):
-        self.positionTriggerData.isActive = isToggled
-        if not isToggled:
+        self.positionTriggerData.is_active = isToggled
+        if isToggled:
             self.enableChildrenWidgets(self.groupboxPositionTrigger)
+            self.worker.process()
+        else:
             self.worker.terminate()
 
     def enableChildrenWidgets(self, object):

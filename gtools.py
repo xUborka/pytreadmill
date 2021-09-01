@@ -2,7 +2,7 @@ import os
 
 
 class GTools:
-    SAVE_FOLDER_PATH = os.path.join(os.getcwd(), 'res', 'def_save_folder.txt')
+    SAVE_FOLDER_PATH = os.getcwd()
 
     @staticmethod
     def write2File(filename, data_list):    # Writes the provided arrays into a csv
@@ -16,8 +16,7 @@ class GTools:
 
     @staticmethod
     def updateSaveFolder(path):
-        with open(GTools.SAVE_FOLDER_PATH, 'w') as file:
-            file.write(path)
+        GTools.SAVE_FOLDER_PATH = path
 
     @staticmethod
     def error_message(title, msg):

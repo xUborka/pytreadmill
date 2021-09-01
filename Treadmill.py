@@ -1,7 +1,7 @@
 import serial
 import serial.tools.list_ports
-from gtools import GTools
 from PyQt5.QtCore import QObject, pyqtSignal
+from gtools import GTools
 from treadmill_data import TreadmillData
 
 
@@ -40,10 +40,8 @@ class Treadmill(QObject):
 
         try:  # ...to connect to treadmill
             self.serialObject = serial.Serial(port, 115200)
-        except serial.SerialException as e:
-            print(e)
-            print(
-                "Error: Serial connection cannot be established. Device in use by an other process or cannot be found.")
+        except serial.SerialException as exc:
+            print(exc)
             self.connectionSignal.emit(False)
             return False
         else:
@@ -84,15 +82,15 @@ class Treadmill(QObject):
             serialInput = serialInput.decode(encoding='ascii')
             serialInput = serialInput.rstrip()
             self.treadmillData = TreadmillData(*serialInput.split(" "))
-        except serial.SerialException as e:
-            GTools.error_message("Treadmill unplugged", e)
+        except serial.SerialException as exc:
+            GTools.error_message("Treadmill unplugged", exc)
             self.connectionSignal.emit(False)
             self.treadmillData.invalidate()
-        except (ValueError, UnicodeDecodeError) as e:
-            GTools.error_message("Serial communication error", e)
+        except (ValueError, UnicodeDecodeError) as exc:
+            GTools.error_message("Serial communication error", exc)
             self.treadmillData.invalidate()
-        except Exception as e:
-            GTools.error_message("Unknown error during reading serial data", e)
+        except Exception as exc:
+            GTools.error_message("Unknown error during reading serial data", exc)
             self.treadmillData.invalidate()
         self.updateTreadmillState()
         return self.treadmillData

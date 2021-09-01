@@ -5,10 +5,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout, QGroupBox
 from Treadmill import Treadmill
-from Port import Port
 from ReadThreadClass import ReadThreadClass
 from gtools import GTools
 from widgets.plot_widget import PlotWidget
+from widgets.port_widget import PortWidget
 
 
 class Window(QWidget):
@@ -19,14 +19,14 @@ class Window(QWidget):
         # INVISIBLE OBJECTS
         self.treadmill = Treadmill()
         self.treadmill.connectionSignal.connect(self.treadmillConnectionHandler)
-        self.treadmill.initializationSignal.connect(self.changePlotColor)
-        self.treadmill.recordSignal.connect(self.changePlotColor)
+        self.treadmill.initializationSignal.connect(self.change_plot_color)
+        self.treadmill.recordSignal.connect(self.change_plot_color)
 
         # Read thread
         self.readThread = ReadThreadClass(self.treadmill)
         self.readThread.printDataSignal.connect(self.printTreadmillData)
         self.readThread.messageSignal.connect(self.print2Console)
-        self.readThread.treadmillStateChanged.connect(self.changePlotColor)
+        self.readThread.treadmillStateChanged.connect(self.change_plot_color)
 
         # List for storing connected treadmills
         self.treadmillList = list()
@@ -34,12 +34,12 @@ class Window(QWidget):
 
         # Plot resources
         self.plotTimer = QTimer(self)
-        self.plotTimer.timeout.connect(self.updatePlot)
+        self.plotTimer.timeout.connect(self.update_plot)
 
         self.initUI()
 
         # Init folder & treadmills
-        self.selectFolder()
+        self.init_folder()
         self.getTreadmills()
 
     def initUI(self):
@@ -55,10 +55,10 @@ class Window(QWidget):
         self.treadmillListDropdown = QComboBox()
 
         # Button - Refresh treadmill list
-        findTreadmillsButton = QPushButton("")
-        findTreadmillsButton.setIcon(QIcon(os.getcwd() + '/res/refresh16.png'))
-        findTreadmillsButton.setIconSize(QSize(16, 16))
-        findTreadmillsButton.clicked.connect(self.getTreadmills)
+        self.findTreadmillsButton = QPushButton("")
+        self.findTreadmillsButton.setIcon(QIcon(os.getcwd() + '/res/refresh16.png'))
+        self.findTreadmillsButton.setIconSize(QSize(16, 16))
+        self.findTreadmillsButton.clicked.connect(self.getTreadmills)
 
         # Button - Connect button
         self.connectButton = QPushButton('Connect')
@@ -71,36 +71,8 @@ class Window(QWidget):
         self.mainConsole.setProperty("readOnly", True)
         self.mainConsole.setMinimumHeight(100)
 
-        # -------- A, B, C ports settings --------
-        # Port A Widgets
-        self.portA = Port("A", self.appendPortList,self.readThread.getTreadmillData, self.treadmill)
-        self.portA.initSpinBox()
-        layoutPortA = Window.initPortUI(self.portA)
-
-        # Port B Widgets
-        self.portB = Port("B", self.appendPortList,self.readThread.getTreadmillData, self.treadmill)
-        self.portB.initSpinBox()
-        layoutPortB = Window.initPortUI(self.portB)
-
-        # Port C Widgets
-        self.portC = Port("C", self.appendPortList,self.readThread.getTreadmillData, self.treadmill)
-        self.portC.initSpinBox()
-        layoutPortC = Window.initPortUI(self.portC)
-
-        # Layout for All Port Layouts
-        layoutAllPorts = QVBoxLayout()
-        layoutAllPorts.addLayout(layoutPortA)
-        layoutAllPorts.addLayout(layoutPortB)
-        layoutAllPorts.addLayout(layoutPortC)
-
-        # layoutAllPorts = QGridLayout()
-
-        groupboxAllPorts = QGroupBox("Port settings")
-        groupboxAllPorts.setLayout(layoutAllPorts)
-
-        self.containerArduinoIO = QWidget()
-        self.layoutArduinoIO = QHBoxLayout(self.containerArduinoIO)
-        self.layoutArduinoIO.addWidget(groupboxAllPorts)
+        # Ports
+        self.ports_widget = PortWidget(self.portList, self.readThread, self.treadmill)
 
         self.treadmillDataPrinter = QPlainTextEdit()
         self.treadmillDataPrinter.setObjectName("treadmillData")
@@ -108,18 +80,19 @@ class Window(QWidget):
         self.treadmillDataPrinter.setOverwriteMode(True)
         self.treadmillDataPrinter.setMaximumHeight(30)
 
+        # Plot
         self.plotWidget = PlotWidget()
 
         levelOneLayout = QHBoxLayout()
         levelOneLayout.addWidget(self.browseButton)
         levelOneLayout.addWidget(self.treadmillListDropdown)
-        levelOneLayout.addWidget(findTreadmillsButton)
+        levelOneLayout.addWidget(self.findTreadmillsButton)
         levelOneLayout.addWidget(self.connectButton)
 
         mainLayout = QVBoxLayout()
         mainLayout.addLayout(levelOneLayout)
         mainLayout.addWidget(self.mainConsole)
-        mainLayout.addWidget(self.containerArduinoIO)
+        mainLayout.addWidget(self.ports_widget)
         mainLayout.addWidget(self.plotWidget)
 
         self.setLayout(mainLayout)
@@ -127,29 +100,6 @@ class Window(QWidget):
         # FINALIZE
         self.show()
         self.setMaximumWidth(self.width())
-
-    @staticmethod
-    def initPortUI(portWidget):
-        layoutPort = QHBoxLayout()
-        layoutPort.addWidget(portWidget.label)
-        layoutPort.addWidget(portWidget.editLabel)
-        layoutPort.addWidget(portWidget.switchButton)
-        layoutPort.addWidget(portWidget.editTriggerDuration)
-        layoutPort.addWidget(portWidget.pulseButton)
-
-        layoutPortPositionTrigger = QHBoxLayout()
-        layoutPortPositionTrigger.addWidget(portWidget.pulseRepetitionButton)
-        layoutPortPositionTrigger.addWidget(portWidget.editTriggerPosition)
-        layoutPortPositionTrigger.addWidget(portWidget.editTriggerWindow)
-        layoutPortPositionTrigger.addWidget(portWidget.editTriggerRetention)
-        layoutPortPositionTrigger.addWidget(portWidget.setButton)
-        layoutPortPositionTrigger.addWidget(portWidget.restoreButton)
-        portWidget.groupboxPositionTrigger.setLayout(layoutPortPositionTrigger)
-        portWidget.groupboxPositionTrigger.setChecked(False)
-
-        layoutPort.addWidget(portWidget.groupboxPositionTrigger)
-
-        return layoutPort
 
     def openDialog(self, questionObject, callback):
         questionString = "Are you sure you want to {0}?".format(questionObject)
@@ -167,19 +117,16 @@ class Window(QWidget):
         else:
             self.connectButton.setProperty("enabled", True)
 
-    def selectFolder(self):
-        path = GTools.SAVE_FOLDER_PATH
-        with open(path, 'r') as file:
-            saveFolder = file.read()
-        if os.path.isdir(saveFolder):
-            self.readThread.saveFolder = saveFolder
-        else:
-            self.readThread.saveFolder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+    def init_folder(self):
+        self.readThread.saveFolder = os.getcwd()
+        self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
 
-        if self.readThread.saveFolder:
+    def selectFolder(self):
+        self.readThread.saveFolder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+
+        if os.path.isdir(self.readThread.saveFolder):
             GTools.updateSaveFolder(self.readThread.saveFolder)
-            self.print2Console("Save folder set to: \n " +
-                               self.readThread.saveFolder + "\n")
+            self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
         else:
             self.readThread.saveFolder = None
             self.print2Console("No valid save folder was set.")
@@ -187,11 +134,9 @@ class Window(QWidget):
         self.checkConnectRequirement()
 
     def getTreadmills(self):
-        self.treadmillList = Treadmill.findTreadmills()
-
         self.treadmillListDropdown.clear()
+        self.treadmillList = Treadmill.findTreadmills()
         self.treadmillListDropdown.addItems(self.treadmillList)
-
         self.checkConnectRequirement()
 
     def treadmillConnectionHandler(self, connected):
@@ -199,16 +144,16 @@ class Window(QWidget):
             self.print2Console("Serial connection established.\n")
             self.readThread.running = True
             self.connectButton.setProperty("text", "Disconnect")
-            self.containerArduinoIO.setEnabled(True)
             self.readThread.portList = self.portList
+            self.ports_widget.setEnabled(True)
             self.readThread.start()
-            self.enableVelocityPlot(True)
+            self.enableVelocityPlot()
         else:
             self.print2Console("Serial connection terminated.\n")
             self.readThread.running = False
             self.connectButton.setProperty("text", "Connect")
-            self.containerArduinoIO.setEnabled(False)
-            self.enableVelocityPlot(False)
+            self.ports_widget.setEnabled(False)
+            self.disableVelocityPlot()
             self.getTreadmills()
 
     def connectButtonAction(self):
@@ -225,24 +170,21 @@ class Window(QWidget):
     def print2Console(self, text):
         self.mainConsole.appendPlainText(text)
 
-    def appendPortList(self, positionTriggerData):
-        self.portList.append(positionTriggerData)
+    def enableVelocityPlot(self):
+        self.plotWidget.enable()
+        self.plotTimer.start(5)
 
-    def enableVelocityPlot(self, enable):
-        if enable:
-            self.plotWidget.enable()
-            self.plotTimer.start(5)
-        else:
-            self.plotTimer.stop()
-            self.plotWidget.disable()
+    def disableVelocityPlot(self):
+        self.plotTimer.stop()
+        self.plotWidget.disable()
 
-    def updatePlot(self):
+    def update_plot(self):
         self.plotWidget.update_plot(self.readThread.treadmillData, self.treadmill.recording)
 
-    def changePlotColor(self):
+    def change_plot_color(self):
         self.plotWidget.update_color(self.treadmill)
 
-    def closeApplication(self):
+    def close_application(self):
         choice = QMessageBox.question(self, 'Message',
                                       "Are you sure you want to quit?", QMessageBox.Yes |
                                       QMessageBox.No, QMessageBox.No)

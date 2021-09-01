@@ -1,5 +1,6 @@
-from PyQt5.QtCore import QThread, pyqtSignal
+from positionTrigger import PositionTriggerWorker
 import time
+from PyQt5.QtCore import QThread, pyqtSignal
 from gtools import GTools
 from treadmill_data import TreadmillData
 
@@ -16,21 +17,11 @@ class ReadThreadClass(QThread):
         self.running = False
         self.record = False
         self.saveFolder = None
-        self.measurementCount = int()
+        self.measurementCount = 0
         self.portList = list()
-        self.positionTriggerThreads = list()
         self.treadmillData = TreadmillData()
 
         self.treadmill_data_list = list()
-
-    def getTreadmillData(self):
-        return self.treadmillData
-
-    def emptyLists(self):
-        self.treadmill_data_list.clear()
-
-    def appendData2Lists(self):
-        self.treadmill_data_list.append(self.treadmillData)
 
     def printData2GUI(self, prefix):
         self.printDataSignal.emit(prefix +
@@ -39,28 +30,17 @@ class ReadThreadClass(QThread):
                                   "   |   lap = " + str(self.treadmillData.lap) +
                                   "   |   rel. position = " + str(self.treadmillData.relPosition) + "    ")
 
-    def checkPositionTriggerEvent(self):
-        position = self.treadmillData.relPosition
-        for portListInstance in self.portList:
-            try:
-                if portListInstance.isActive:
-                    if not portListInstance.thread.isRunning():
-                        if portListInstance.start <= position <= (portListInstance.start + portListInstance.window):
-                            portListInstance.thread.start()
-            except Exception as e:
-                print(e)
-
     def checkPortStates(self):
         for portListInstance, portState in zip(self.portList, self.treadmillData.portStates):
             if not portListInstance.port.groupboxPositionTrigger.isChecked():
-                if portListInstance.isActive != portState:
+                if portListInstance.is_active != portState:
                     portListInstance.port.switchButton.setChecked(bool(portState))
 
     def finishRecording(self, filename):
         self.record = False
         self.messageSignal.emit('Recording #' + str(self.measurementCount) + ' finished.\n')
         GTools.write2File(filename, self.treadmill_data_list)
-        self.emptyLists()
+        self.treadmill_data_list.clear()
         self.messageSignal.emit('Data written to: ' + filename + '\n')
         self.messageSignal.emit("Waiting for trigger...")
 
@@ -74,7 +54,7 @@ class ReadThreadClass(QThread):
         self.record = False
         self.measurementCount = 0
 
-        self.emptyLists()
+        self.treadmill_data_list.clear()
         self.messageSignal.emit("Waiting for trigger...")
 
         while self.running and self.treadmill.connected:
@@ -97,13 +77,9 @@ class ReadThreadClass(QThread):
             while self.running and self.record:
                 self.printData2GUI(str("Recording... " +
                                        time.strftime("%M:%S", time.gmtime(int(self.treadmillData.time) / 1000))))
-                self.appendData2Lists()
+                self.treadmill_data_list.append(self.treadmillData)
                 self.treadmillData = self.treadmill.readData()
-                self.checkPositionTriggerEvent()
 
                 if self.treadmillData.recording == 0:
                     self.finishRecording(filename)
                     self.sendInitializationSignal()
-
-        if self.running and not self.treadmill.connected:
-            pass  # treadmill unplugged
