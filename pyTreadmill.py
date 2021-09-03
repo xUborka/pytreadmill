@@ -118,7 +118,12 @@ class Window(QWidget):
             self.connectButton.setProperty("enabled", True)
 
     def init_folder(self):
-        self.readThread.saveFolder = os.getcwd()
+        saveFolder = GTools.getSaveFolder()
+        if saveFolder:
+            self.readThread.saveFolder = saveFolder
+        else:
+            self.readThread.saveFolder = os.getcwd()
+
         self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
 
     def selectFolder(self):
@@ -129,7 +134,7 @@ class Window(QWidget):
             self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
         else:
             self.readThread.saveFolder = None
-            self.print2Console("No valid save folder was set.")
+            self.print2Console("No valid save folder was set.\n")
 
         self.checkConnectRequirement()
 
