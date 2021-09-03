@@ -2,17 +2,17 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGroupBox
 from Port import Port
 
 class PortWidget(QGroupBox):
-    def __init__(self, port_list, get_treadmill_data, treadmill):
+    def __init__(self, port_list, readThread, treadmill):
         super().__init__("Port Settings")
-        self.port_a = Port("A", port_list, get_treadmill_data, treadmill)
+        self.port_a = Port("A", port_list, readThread, treadmill)
         layout_port_a = PortWidget.init_port_ui(self.port_a)
 
         # Port B Widgets
-        self.port_b = Port("B", port_list, get_treadmill_data, treadmill)
+        self.port_b = Port("B", port_list, readThread, treadmill)
         layout_port_b = PortWidget.init_port_ui(self.port_b)
 
         # Port C Widgets
-        self.port_c = Port("C", port_list, get_treadmill_data, treadmill)
+        self.port_c = Port("C", port_list, readThread, treadmill)
         layout_port_c = PortWidget.init_port_ui(self.port_c)
 
         # Layout for All Port Layouts

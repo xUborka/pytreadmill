@@ -8,11 +8,11 @@ from interfaces.position_trigger_data import PositionTriggerData
 class Port(QWidget):
     positionTriggerChangedSignal = pyqtSignal(object)
 
-    def __init__(self, name, port_list, treadmill_data, treadmill):
+    def __init__(self, name, port_list, readThread, treadmill):
         super(Port, self).__init__()
         self.name = name
         self.treadmill = treadmill
-        self.treadmill_data = treadmill_data
+        self.readThread = readThread
         self.positionTriggerData = PositionTriggerData(self)
 
         self.clicked = True

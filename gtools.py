@@ -22,7 +22,7 @@ class GTools:
     @staticmethod
     def error_message(title, msg):
         print(f'{title} : {msg}')
-
+    
     def getSaveFolder():
         if os.path.exists(GTools.SAVE_FOLDER_PATH):
             with open(GTools.SAVE_FOLDER_PATH, 'r') as file:
