@@ -1,49 +1,164 @@
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGroupBox
-from Port import Port
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer
+from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QLabel,\
+    QSpinBox, QGroupBox
+from positionTrigger import PositionTriggerWorker
+from interfaces.position_trigger_data import PositionTriggerData
 
 
-class PortWidget(QGroupBox):
-    def __init__(self, port_list, get_treadmill_data, treadmill):
-        super().__init__("Port Settings")
-        self.port_a = Port("A", port_list, get_treadmill_data, treadmill)
-        layout_port_a = PortWidget.init_port_ui(self.port_a)
+class PortWidget(QWidget):
+    positionTriggerChangedSignal = pyqtSignal(object)
 
-        # Port B Widgets
-        self.port_b = Port("B", port_list, get_treadmill_data, treadmill)
-        layout_port_b = PortWidget.init_port_ui(self.port_b)
+    def __init__(self, name, port_list, treadmill_data, treadmill):
+        super().__init__()
+        self.name = name
+        self.treadmill = treadmill
+        self.treadmill_data = treadmill_data
+        self.positionTriggerData = PositionTriggerData(self)
 
-        # Port C Widgets
-        self.port_c = Port("C", port_list, get_treadmill_data, treadmill)
-        layout_port_c = PortWidget.init_port_ui(self.port_c)
+        self.clicked = True
 
-        # Layout for All Port Layouts
-        layout_all_ports = QVBoxLayout()
-        layout_all_ports.addLayout(layout_port_a)
-        layout_all_ports.addLayout(layout_port_b)
-        layout_all_ports.addLayout(layout_port_c)
+        # create worker thread
+        self.worker = PositionTriggerWorker(self.positionTriggerData)
+        self.worker.triggerSignal.connect(self.pulseSignalAction)
+        self.positionTriggerChangedSignal.connect(self.worker.updateTriggerInterval)
 
-        self.setEnabled(False)
-        self.setLayout(layout_all_ports)
+        # initialize UI elements
+        self.label = QLabel(self.name)
+        self.editLabel = QLineEdit()
+        self.switchButton = QPushButton("OFF")
+        self.editTriggerDuration = QSpinBox()
+        self.pulseButton = QPushButton("Impulse")
+        self.pulseRepetitionButton = QPushButton("Single Shot")
+        self.editTriggerPosition = QSpinBox()
+        self.editTriggerWindow = QSpinBox()
+        self.editTriggerRetention = QSpinBox()
+        self.setButton = QPushButton("Set")
+        self.restoreButton = QPushButton("Restore")
+        self.groupboxPositionTrigger = QGroupBox()
+        self.pulseTimer = QTimer()
+
+        # set parameters of UI elements
+        self.setUIElements()
+
+        # update and send data about port instance to main thread
+        self.getPositionTriggerData()
+        self.init_spinbox()
+        port_list.append(self.positionTriggerData)
+
+    def setUIElements(self):
+        self.editLabel.setPlaceholderText("port " + self.name)
+
+        self.switchButton.setStyleSheet("color: white;" "background-color: red")
+        self.switchButton.clicked.connect(self.portSwitchAction)
+        self.pulseTimer.timeout.connect(self.portSwitchAction)
+
+        self.editTriggerDuration.setAlignment(Qt.AlignRight)
+        self.editTriggerDuration.setSuffix(" ms")
+        self.editTriggerDuration.valueChanged.connect(self.getPulseDuration)
+
+        self.pulseButton.clicked.connect(self.pulseSignalAction)
+
+        self.pulseRepetitionButton.setCheckable(True)
+        self.pulseRepetitionButton.setFocusPolicy(Qt.NoFocus)
+        self.pulseRepetitionButton.toggled.connect(self.pulseRepetitionButtonAction)
+
+        self.editTriggerPosition.setAlignment(Qt.AlignRight)
+        self.editTriggerPosition.setSuffix(" ‰")
+        self.editTriggerPosition.valueChanged.connect(
+            lambda: self.valueChanged(self.editTriggerPosition, self.positionTriggerData.start))
+
+        self.editTriggerWindow.setAlignment(Qt.AlignRight)
+        self.editTriggerWindow.setSuffix(" ‰")
+        self.editTriggerWindow.valueChanged.connect(
+            lambda: self.valueChanged(self.editTriggerWindow, self.positionTriggerData.window))
+
+        self.editTriggerRetention.setAlignment(Qt.AlignRight)
+        self.editTriggerRetention.setSuffix(" ms")
+        self.editTriggerRetention.valueChanged.connect(
+            lambda: self.valueChanged(self.editTriggerRetention, self.positionTriggerData.retention))
+
+        self.setButton.clicked.connect(self.setButtonAction)
+        self.restoreButton.clicked.connect(self.restoreButtonAction)
+
+        self.groupboxPositionTrigger.setCheckable(True)
+        self.groupboxPositionTrigger.toggled.connect(self.groupboxToggleAction)
+        self.groupboxPositionTrigger.setChecked(False)
 
     @staticmethod
-    def init_port_ui(port_widget):
-        layout_port = QHBoxLayout()
-        layout_port.addWidget(port_widget.label)
-        layout_port.addWidget(port_widget.editLabel)
-        layout_port.addWidget(port_widget.switchButton)
-        layout_port.addWidget(port_widget.editTriggerDuration)
-        layout_port.addWidget(port_widget.pulseButton)
+    def init_single_spinbox(widget, minv, maxv, val, step):
+        widget.setRange(minv, maxv)
+        widget.setValue(val)
+        widget.setSingleStep(step)
 
-        layout_port_position_trigger = QHBoxLayout()
-        layout_port_position_trigger.addWidget(port_widget.pulseRepetitionButton)
-        layout_port_position_trigger.addWidget(port_widget.editTriggerPosition)
-        layout_port_position_trigger.addWidget(port_widget.editTriggerWindow)
-        layout_port_position_trigger.addWidget(port_widget.editTriggerRetention)
-        layout_port_position_trigger.addWidget(port_widget.setButton)
-        layout_port_position_trigger.addWidget(port_widget.restoreButton)
-        port_widget.groupboxPositionTrigger.setLayout(layout_port_position_trigger)
-        port_widget.groupboxPositionTrigger.setChecked(False)
+    def init_spinbox(self):
+        PortWidget.init_single_spinbox(self.editTriggerDuration, 100, 5000, 100, 100)
+        PortWidget.init_single_spinbox(self.editTriggerPosition, 1, 1000, 500, 50)
+        PortWidget.init_single_spinbox(self.editTriggerWindow, 0, 999, 100, 50)
+        PortWidget.init_single_spinbox(self.editTriggerRetention, 50, 10000, 3000, 500)
+        self.setButtonAction()
 
-        layout_port.addWidget(port_widget.groupboxPositionTrigger)
+    def portSwitchAction(self):
+        if self.clicked:
+            self.switchButton.setText("ON")
+            self.switchButton.setStyleSheet("color: white; background-color: green;")
+            self.pulseButton.setDisabled(True)
+            self.treadmill.writeData(self.name)
+            self.clicked = False
+        else:
+            self.switchButton.setText("OFF")
+            self.switchButton.setStyleSheet("color: white; background-color: red;")
+            self.pulseButton.setDisabled(False)
+            self.pulseTimer.stop()
+            self.treadmill.writeData(self.name.lower())
+            self.clicked = True
 
-        return layout_port
+    def pulseSignalAction(self):
+        self.pulseTimer.start(self.editTriggerDuration.value())
+
+    def pulseRepetitionButtonAction(self, checked):
+        if checked:
+            self.pulseRepetitionButton.setText("Continuous Shot")
+            self.worker.setTimerSingleShot(False)
+        else:
+            self.pulseRepetitionButton.setText("Single Shot")
+            self.worker.setTimerSingleShot(True)
+
+    def valueChanged(self, spinBox, reference):
+        if spinBox.value() != reference:
+            spinBox.setStyleSheet("background-color: yellow;")
+        else:
+            spinBox.setStyleSheet("background-color: white;")
+
+    def getPulseDuration(self):
+        self.positionTriggerData.duration = self.editTriggerDuration.value()
+
+    def getPositionTriggerData(self):
+        self.positionTriggerData.start = self.editTriggerPosition.value()
+        self.positionTriggerData.window = self.editTriggerWindow.value()
+        self.positionTriggerData.retention = self.editTriggerRetention.value()
+        self.getPulseDuration()
+
+    def setButtonAction(self):
+        self.getPositionTriggerData()
+        self.valueChanged(self.editTriggerPosition, self.positionTriggerData.start)
+        self.valueChanged(self.editTriggerWindow, self.positionTriggerData.window)
+        self.valueChanged(self.editTriggerRetention, self.positionTriggerData.retention)
+
+        self.positionTriggerChangedSignal.emit(self.positionTriggerData)
+
+    def restoreButtonAction(self):
+        self.editTriggerPosition.setValue(self.positionTriggerData.start)
+        self.editTriggerWindow.setValue(self.positionTriggerData.window)
+        self.editTriggerRetention.setValue(self.positionTriggerData.retention)
+
+    def groupboxToggleAction(self, isToggled):
+        self.positionTriggerData.is_active = isToggled
+        if isToggled:
+            self.enableChildrenWidgets(self.groupboxPositionTrigger)
+            self.worker.process()
+        else:
+            self.worker.terminate()
+
+    def enableChildrenWidgets(self, obj):
+        for child in obj.findChildren(QWidget):
+            child.setEnabled(True)

@@ -4,13 +4,13 @@ from gtools import GTools
 from interfaces.treadmill_data import TreadmillData
 
 
-class ReadThreadClass(QThread):
+class ReadThread(QThread):
     printDataSignal = pyqtSignal(str)
     messageSignal = pyqtSignal(str)
     treadmillStateChanged = pyqtSignal(str)
 
     def __init__(self, treadmill, parent=None):
-        super(ReadThreadClass, self).__init__(parent)
+        super(ReadThread, self).__init__(parent)
         self.treadmill = treadmill
         self.initialized = False
         self.running = False

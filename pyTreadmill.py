@@ -5,10 +5,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
 from treadmill_handler import Treadmill
-from ReadThreadClass import ReadThreadClass
+from read_thread import ReadThread
 from gtools import GTools
 from widgets.plot_widget import PlotWidget
-from widgets.port_widget import PortWidget
+from widgets.port_group_widget import PortGroupWidget
 
 
 class Window(QWidget):
@@ -23,7 +23,7 @@ class Window(QWidget):
         self.treadmill.record_signal.connect(self.change_plot_color)
 
         # Read thread
-        self.readThread = ReadThreadClass(self.treadmill)
+        self.readThread = ReadThread(self.treadmill)
         self.readThread.printDataSignal.connect(self.printTreadmillData)
         self.readThread.messageSignal.connect(self.print2Console)
         self.readThread.treadmillStateChanged.connect(self.change_plot_color)
@@ -72,7 +72,7 @@ class Window(QWidget):
         self.mainConsole.setMinimumHeight(100)
 
         # Ports
-        self.ports_widget = PortWidget(self.portList, self.readThread, self.treadmill)
+        self.ports_widget = PortGroupWidget(self.portList, self.readThread, self.treadmill)
 
         self.treadmillDataPrinter = QPlainTextEdit()
         self.treadmillDataPrinter.setObjectName("treadmillData")
