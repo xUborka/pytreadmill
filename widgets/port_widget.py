@@ -6,83 +6,83 @@ from interfaces.position_trigger_data import PositionTriggerData
 
 
 class PortWidget(QWidget):
-    positionTriggerChangedSignal = pyqtSignal(object)
+    position_trigger_changed_signal = pyqtSignal(object)
 
     def __init__(self, name, port_list, treadmill_data, treadmill):
         super().__init__()
         self.name = name
         self.treadmill = treadmill
         self.treadmill_data = treadmill_data
-        self.positionTriggerData = PositionTriggerData(self)
+        self.position_trigger_data = PositionTriggerData(self)
 
         self.clicked = True
 
         # create worker thread
-        self.worker = PositionTriggerWorker(self.positionTriggerData)
-        self.worker.triggerSignal.connect(self.pulseSignalAction)
-        self.positionTriggerChangedSignal.connect(self.worker.updateTriggerInterval)
+        self.worker = PositionTriggerWorker(self.position_trigger_data)
+        self.worker.triggerSignal.connect(self.pulse_signal_action)
+        self.position_trigger_changed_signal.connect(self.worker.update_trigger_interval)
 
         # initialize UI elements
         self.label = QLabel(self.name)
-        self.editLabel = QLineEdit()
-        self.switchButton = QPushButton("OFF")
-        self.editTriggerDuration = QSpinBox()
-        self.pulseButton = QPushButton("Impulse")
-        self.pulseRepetitionButton = QPushButton("Single Shot")
-        self.editTriggerPosition = QSpinBox()
-        self.editTriggerWindow = QSpinBox()
-        self.editTriggerRetention = QSpinBox()
-        self.setButton = QPushButton("Set")
-        self.restoreButton = QPushButton("Restore")
-        self.groupboxPositionTrigger = QGroupBox()
-        self.pulseTimer = QTimer()
+        self.edit_label = QLineEdit()
+        self.switch_button = QPushButton("OFF")
+        self.edit_trigger_duration = QSpinBox()
+        self.pulse_button = QPushButton("Impulse")
+        self.pulse_repetition_button = QPushButton("Single Shot")
+        self.edit_trigger_position = QSpinBox()
+        self.edit_trigger_window = QSpinBox()
+        self.edit_trigger_retention = QSpinBox()
+        self.set_button = QPushButton("Set")
+        self.restore_button = QPushButton("Restore")
+        self.groupbox_position_trigger = QGroupBox()
+        self.pulse_timer = QTimer()
 
         # set parameters of UI elements
-        self.setUIElements()
+        self.set_ui_elements()
 
         # update and send data about port instance to main thread
-        self.getPositionTriggerData()
+        self.get_position_trigger_data()
         self.init_spinbox()
-        port_list.append(self.positionTriggerData)
+        port_list.append(self.position_trigger_data)
 
-    def setUIElements(self):
-        self.editLabel.setPlaceholderText("port " + self.name)
+    def set_ui_elements(self):
+        self.edit_label.setPlaceholderText("port " + self.name)
 
-        self.switchButton.setStyleSheet("color: white;" "background-color: red")
-        self.switchButton.clicked.connect(self.portSwitchAction)
-        self.pulseTimer.timeout.connect(self.portSwitchAction)
+        self.switch_button.setStyleSheet("color: white;" "background-color: red")
+        self.switch_button.clicked.connect(self.port_switch_action)
+        self.pulse_timer.timeout.connect(self.port_switch_action)
 
-        self.editTriggerDuration.setAlignment(Qt.AlignRight)
-        self.editTriggerDuration.setSuffix(" ms")
-        self.editTriggerDuration.valueChanged.connect(self.getPulseDuration)
+        self.edit_trigger_duration.setAlignment(Qt.AlignRight)
+        self.edit_trigger_duration.setSuffix(" ms")
+        self.edit_trigger_duration.valueChanged.connect(self.get_pulse_duration)
 
-        self.pulseButton.clicked.connect(self.pulseSignalAction)
+        self.pulse_button.clicked.connect(self.pulse_signal_action)
 
-        self.pulseRepetitionButton.setCheckable(True)
-        self.pulseRepetitionButton.setFocusPolicy(Qt.NoFocus)
-        self.pulseRepetitionButton.toggled.connect(self.pulseRepetitionButtonAction)
+        self.pulse_repetition_button.setCheckable(True)
+        self.pulse_repetition_button.setFocusPolicy(Qt.NoFocus)
+        self.pulse_repetition_button.toggled.connect(self.pulse_repetition_button_action)
 
-        self.editTriggerPosition.setAlignment(Qt.AlignRight)
-        self.editTriggerPosition.setSuffix(" ‰")
-        self.editTriggerPosition.valueChanged.connect(
-            lambda: self.valueChanged(self.editTriggerPosition, self.positionTriggerData.start))
+        self.edit_trigger_position.setAlignment(Qt.AlignRight)
+        self.edit_trigger_position.setSuffix(" ‰")
+        self.edit_trigger_position.valueChanged.connect(
+            lambda: self.value_changed(self.edit_trigger_position, self.position_trigger_data.start))
 
-        self.editTriggerWindow.setAlignment(Qt.AlignRight)
-        self.editTriggerWindow.setSuffix(" ‰")
-        self.editTriggerWindow.valueChanged.connect(
-            lambda: self.valueChanged(self.editTriggerWindow, self.positionTriggerData.window))
+        self.edit_trigger_window.setAlignment(Qt.AlignRight)
+        self.edit_trigger_window.setSuffix(" ‰")
+        self.edit_trigger_window.valueChanged.connect(
+            lambda: self.value_changed(self.edit_trigger_window, self.position_trigger_data.window))
 
-        self.editTriggerRetention.setAlignment(Qt.AlignRight)
-        self.editTriggerRetention.setSuffix(" ms")
-        self.editTriggerRetention.valueChanged.connect(
-            lambda: self.valueChanged(self.editTriggerRetention, self.positionTriggerData.retention))
+        self.edit_trigger_retention.setAlignment(Qt.AlignRight)
+        self.edit_trigger_retention.setSuffix(" ms")
+        self.edit_trigger_retention.valueChanged.connect(
+            lambda: self.value_changed(self.edit_trigger_retention, self.position_trigger_data.retention))
 
-        self.setButton.clicked.connect(self.setButtonAction)
-        self.restoreButton.clicked.connect(self.restoreButtonAction)
+        self.set_button.clicked.connect(self.set_button_action)
+        self.restore_button.clicked.connect(self.restore_button_action)
 
-        self.groupboxPositionTrigger.setCheckable(True)
-        self.groupboxPositionTrigger.toggled.connect(self.groupboxToggleAction)
-        self.groupboxPositionTrigger.setChecked(False)
+        self.groupbox_position_trigger.setCheckable(True)
+        self.groupbox_position_trigger.toggled.connect(self.groupbox_toggle_action)
+        self.groupbox_position_trigger.setChecked(False)
 
     @staticmethod
     def init_single_spinbox(widget, minv, maxv, val, step):
@@ -91,74 +91,74 @@ class PortWidget(QWidget):
         widget.setSingleStep(step)
 
     def init_spinbox(self):
-        PortWidget.init_single_spinbox(self.editTriggerDuration, 100, 5000, 100, 100)
-        PortWidget.init_single_spinbox(self.editTriggerPosition, 1, 1000, 500, 50)
-        PortWidget.init_single_spinbox(self.editTriggerWindow, 0, 999, 100, 50)
-        PortWidget.init_single_spinbox(self.editTriggerRetention, 50, 10000, 3000, 500)
-        self.setButtonAction()
+        PortWidget.init_single_spinbox(self.edit_trigger_duration, 100, 5000, 100, 100)
+        PortWidget.init_single_spinbox(self.edit_trigger_position, 1, 1000, 500, 50)
+        PortWidget.init_single_spinbox(self.edit_trigger_window, 0, 999, 100, 50)
+        PortWidget.init_single_spinbox(self.edit_trigger_retention, 50, 10000, 3000, 500)
+        self.set_button_action()
 
-    def portSwitchAction(self):
+    def port_switch_action(self):
         if self.clicked:
-            self.switchButton.setText("ON")
-            self.switchButton.setStyleSheet("color: white; background-color: green;")
-            self.pulseButton.setDisabled(True)
-            self.treadmill.writeData(self.name)
+            self.switch_button.setText("ON")
+            self.switch_button.setStyleSheet("color: white; background-color: green;")
+            self.pulse_button.setDisabled(True)
+            self.treadmill.write_data(self.name)
             self.clicked = False
         else:
-            self.switchButton.setText("OFF")
-            self.switchButton.setStyleSheet("color: white; background-color: red;")
-            self.pulseButton.setDisabled(False)
-            self.pulseTimer.stop()
-            self.treadmill.writeData(self.name.lower())
+            self.switch_button.setText("OFF")
+            self.switch_button.setStyleSheet("color: white; background-color: red;")
+            self.pulse_button.setDisabled(False)
+            self.pulse_timer.stop()
+            self.treadmill.write_data(self.name.lower())
             self.clicked = True
 
-    def pulseSignalAction(self):
-        self.pulseTimer.start(self.editTriggerDuration.value())
+    def pulse_signal_action(self):
+        self.pulse_timer.start(self.edit_trigger_duration.value())
 
-    def pulseRepetitionButtonAction(self, checked):
+    def pulse_repetition_button_action(self, checked):
         if checked:
-            self.pulseRepetitionButton.setText("Continuous Shot")
-            self.worker.setTimerSingleShot(False)
+            self.pulse_repetition_button.setText("Continuous Shot")
+            self.worker.set_timer_single_shot(False)
         else:
-            self.pulseRepetitionButton.setText("Single Shot")
-            self.worker.setTimerSingleShot(True)
+            self.pulse_repetition_button.setText("Single Shot")
+            self.worker.set_timer_single_shot(True)
 
-    def valueChanged(self, spinBox, reference):
-        if spinBox.value() != reference:
-            spinBox.setStyleSheet("background-color: yellow;")
+    def value_changed(self, spin_box, reference):
+        if spin_box.value() != reference:
+            spin_box.setStyleSheet("background-color: yellow;")
         else:
-            spinBox.setStyleSheet("background-color: white;")
+            spin_box.setStyleSheet("background-color: white;")
 
-    def getPulseDuration(self):
-        self.positionTriggerData.duration = self.editTriggerDuration.value()
+    def get_pulse_duration(self):
+        self.position_trigger_data.duration = self.edit_trigger_duration.value()
 
-    def getPositionTriggerData(self):
-        self.positionTriggerData.start = self.editTriggerPosition.value()
-        self.positionTriggerData.window = self.editTriggerWindow.value()
-        self.positionTriggerData.retention = self.editTriggerRetention.value()
-        self.getPulseDuration()
+    def get_position_trigger_data(self):
+        self.position_trigger_data.start = self.edit_trigger_position.value()
+        self.position_trigger_data.window = self.edit_trigger_window.value()
+        self.position_trigger_data.retention = self.edit_trigger_retention.value()
+        self.get_pulse_duration()
 
-    def setButtonAction(self):
-        self.getPositionTriggerData()
-        self.valueChanged(self.editTriggerPosition, self.positionTriggerData.start)
-        self.valueChanged(self.editTriggerWindow, self.positionTriggerData.window)
-        self.valueChanged(self.editTriggerRetention, self.positionTriggerData.retention)
+    def set_button_action(self):
+        self.get_position_trigger_data()
+        self.value_changed(self.edit_trigger_position, self.position_trigger_data.start)
+        self.value_changed(self.edit_trigger_window, self.position_trigger_data.window)
+        self.value_changed(self.edit_trigger_retention, self.position_trigger_data.retention)
 
-        self.positionTriggerChangedSignal.emit(self.positionTriggerData)
+        self.position_trigger_changed_signal.emit(self.position_trigger_data)
 
-    def restoreButtonAction(self):
-        self.editTriggerPosition.setValue(self.positionTriggerData.start)
-        self.editTriggerWindow.setValue(self.positionTriggerData.window)
-        self.editTriggerRetention.setValue(self.positionTriggerData.retention)
+    def restore_button_action(self):
+        self.edit_trigger_position.setValue(self.position_trigger_data.start)
+        self.edit_trigger_window.setValue(self.position_trigger_data.window)
+        self.edit_trigger_retention.setValue(self.position_trigger_data.retention)
 
-    def groupboxToggleAction(self, isToggled):
-        self.positionTriggerData.is_active = isToggled
-        if isToggled:
-            self.enableChildrenWidgets(self.groupboxPositionTrigger)
+    def groupbox_toggle_action(self, is_toggled):
+        self.position_trigger_data.is_active = is_toggled
+        if is_toggled:
+            self.enable_children_widgets(self.groupbox_position_trigger)
             self.worker.process()
         else:
             self.worker.terminate()
 
-    def enableChildrenWidgets(self, obj):
+    def enable_children_widgets(self, obj):
         for child in obj.findChildren(QWidget):
             child.setEnabled(True)

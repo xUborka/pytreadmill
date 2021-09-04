@@ -14,96 +14,96 @@ from widgets.port_group_widget import PortGroupWidget
 class Window(QWidget):
     def __init__(self):
         # Window
-        super(Window, self).__init__()
+        super().__init__()
 
         # INVISIBLE OBJECTS
         self.treadmill = Treadmill()
-        self.treadmill.connection_signal.connect(self.treadmillConnectionHandler)
+        self.treadmill.connection_signal.connect(self.treadmill_connection_handler)
         self.treadmill.init_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.change_plot_color)
 
         # Read thread
-        self.readThread = ReadThread(self.treadmill)
-        self.readThread.printDataSignal.connect(self.printTreadmillData)
-        self.readThread.messageSignal.connect(self.print2Console)
-        self.readThread.treadmillStateChanged.connect(self.change_plot_color)
+        self.read_thread = ReadThread(self.treadmill)
+        self.read_thread.print_data_signal.connect(self.print_treadmill_data)
+        self.read_thread.message_signal.connect(self.print_to_console)
+        self.read_thread.treadmill_state_changed.connect(self.change_plot_color)
 
         # List for storing connected treadmills
-        self.treadmillList = list()
-        self.portList = list()
+        self.treadmill_list = list()
+        self.port_list = list()
 
         # Plot resources
-        self.plotTimer = QTimer(self)
-        self.plotTimer.timeout.connect(self.update_plot)
+        self.plot_timer = QTimer(self)
+        self.plot_timer.timeout.connect(self.update_plot)
 
-        self.initUI()
+        self.init_ui()
 
         # Init folder & treadmills
         self.init_folder()
-        self.getTreadmills()
+        self.get_treadmills()
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle('pyTreadmill')
         self.myicon = str(os.getcwd() + '/res/vinyl16.png')
         self.setWindowIcon(QIcon(self.myicon))
 
         # Button - Browse folders button
-        self.browseButton = QPushButton('Set folder')
-        self.browseButton.clicked.connect(self.selectFolder)
+        self.browse_button = QPushButton('Set folder')
+        self.browse_button.clicked.connect(self.select_folder)
 
         # Dropdown - For selecting treadmill
-        self.treadmillListDropdown = QComboBox()
+        self.treadmill_list_dropdown = QComboBox()
 
         # Button - Refresh treadmill list
-        self.findTreadmillsButton = QPushButton("")
-        self.findTreadmillsButton.setIcon(QIcon(os.getcwd() + '/res/refresh16.png'))
-        self.findTreadmillsButton.setIconSize(QSize(16, 16))
-        self.findTreadmillsButton.clicked.connect(self.getTreadmills)
+        self.find_treadmills_button = QPushButton("")
+        self.find_treadmills_button.setIcon(QIcon(os.getcwd() + '/res/refresh16.png'))
+        self.find_treadmills_button.setIconSize(QSize(16, 16))
+        self.find_treadmills_button.clicked.connect(self.get_treadmills)
 
         # Button - Connect button
-        self.connectButton = QPushButton('Connect')
-        self.connectButton.clicked.connect(self.connectButtonAction)
-        self.connectButton.setProperty("enabled", False)
+        self.connect_button = QPushButton('Connect')
+        self.connect_button.clicked.connect(self.connect_button_action)
+        self.connect_button.setProperty("enabled", False)
 
         # plainTextEdit - Main console style display
-        self.mainConsole = QPlainTextEdit()
-        self.mainConsole.setObjectName("mainConsole")
-        self.mainConsole.setProperty("readOnly", True)
-        self.mainConsole.setMinimumHeight(100)
+        self.main_console = QPlainTextEdit()
+        self.main_console.setObjectName("mainConsole")
+        self.main_console.setProperty("readOnly", True)
+        self.main_console.setMinimumHeight(100)
 
         # Ports
-        self.ports_widget = PortGroupWidget(self.portList, self.readThread, self.treadmill)
+        self.ports_widget = PortGroupWidget(self.port_list, self.read_thread, self.treadmill)
 
-        self.treadmillDataPrinter = QPlainTextEdit()
-        self.treadmillDataPrinter.setObjectName("treadmillData")
-        self.treadmillDataPrinter.setProperty("readOnly", True)
-        self.treadmillDataPrinter.setOverwriteMode(True)
-        self.treadmillDataPrinter.setMaximumHeight(30)
+        self.treadmill_data_printer = QPlainTextEdit()
+        self.treadmill_data_printer.setObjectName("treadmillData")
+        self.treadmill_data_printer.setProperty("readOnly", True)
+        self.treadmill_data_printer.setOverwriteMode(True)
+        self.treadmill_data_printer.setMaximumHeight(30)
 
         # Plot
-        self.plotWidget = PlotWidget()
+        self.plot_widget = PlotWidget()
 
-        levelOneLayout = QHBoxLayout()
-        levelOneLayout.addWidget(self.browseButton)
-        levelOneLayout.addWidget(self.treadmillListDropdown)
-        levelOneLayout.addWidget(self.findTreadmillsButton)
-        levelOneLayout.addWidget(self.connectButton)
+        level_one_layout = QHBoxLayout()
+        level_one_layout.addWidget(self.browse_button)
+        level_one_layout.addWidget(self.treadmill_list_dropdown)
+        level_one_layout.addWidget(self.find_treadmills_button)
+        level_one_layout.addWidget(self.connect_button)
 
-        mainLayout = QVBoxLayout()
-        mainLayout.addLayout(levelOneLayout)
-        mainLayout.addWidget(self.mainConsole)
-        mainLayout.addWidget(self.ports_widget)
-        mainLayout.addWidget(self.plotWidget)
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(level_one_layout)
+        main_layout.addWidget(self.main_console)
+        main_layout.addWidget(self.ports_widget)
+        main_layout.addWidget(self.plot_widget)
 
-        self.setLayout(mainLayout)
+        self.setLayout(main_layout)
 
         # FINALIZE
         self.show()
         self.setMaximumWidth(self.width())
 
-    def openDialog(self, questionObject, callback):
-        questionString = "Are you sure you want to {0}?".format(questionObject)
-        choice = QMessageBox.question(self, 'Message', questionString,
+    def open_dialog(self, question_object, callback):
+        question_string = "Are you sure you want to {0}?".format(question_object)
+        choice = QMessageBox.question(self, 'Message', question_string,
                                       QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
         if choice == QMessageBox.Yes:
@@ -111,78 +111,78 @@ class Window(QWidget):
         else:
             pass
 
-    def checkConnectRequirement(self):
-        if len(self.treadmillList) == 0 or self.readThread.saveFolder is None:
-            self.connectButton.setProperty("enabled", False)
+    def check_connection_requirement(self):
+        if len(self.treadmill_list) == 0 or self.read_thread.save_folder is None:
+            self.connect_button.setProperty("enabled", False)
         else:
-            self.connectButton.setProperty("enabled", True)
+            self.connect_button.setProperty("enabled", True)
 
     def init_folder(self):
-        self.readThread.saveFolder = GTools.get_save_folder()
-        self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
+        self.read_thread.save_folder = GTools.get_save_folder()
+        self.print_to_console(f"Save folder set to: {self.read_thread.save_folder} \n")
 
-    def selectFolder(self):
-        self.readThread.saveFolder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+    def select_folder(self):
+        self.read_thread.save_folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
-        if os.path.isdir(self.readThread.saveFolder):
-            GTools.update_save_folder(self.readThread.saveFolder)
-            self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
+        if os.path.isdir(self.read_thread.save_folder):
+            GTools.update_save_folder(self.read_thread.save_folder)
+            self.print_to_console(f"Save folder set to: {self.read_thread.save_folder} \n")
         else:
-            self.readThread.saveFolder = None
-            self.print2Console("No valid save folder was set.")
+            self.read_thread.save_folder = None
+            self.print_to_console("No valid save folder was set.")
 
-        self.checkConnectRequirement()
+        self.check_connection_requirement()
 
-    def getTreadmills(self):
-        self.treadmillListDropdown.clear()
-        self.treadmillList = Treadmill.find_treadmills()
-        self.treadmillListDropdown.addItems(self.treadmillList)
-        self.checkConnectRequirement()
+    def get_treadmills(self):
+        self.treadmill_list_dropdown.clear()
+        self.treadmill_list = Treadmill.find_treadmills()
+        self.treadmill_list_dropdown.addItems(self.treadmill_list)
+        self.check_connection_requirement()
 
-    def treadmillConnectionHandler(self, connected):
+    def treadmill_connection_handler(self, connected):
         if connected:
-            self.print2Console("Serial connection established.\n")
-            self.readThread.running = True
-            self.connectButton.setProperty("text", "Disconnect")
-            self.readThread.portList = self.portList
+            self.print_to_console("Serial connection established.\n")
+            self.read_thread.running = True
+            self.connect_button.setProperty("text", "Disconnect")
+            self.read_thread.port_list = self.port_list
             self.ports_widget.setEnabled(True)
-            self.readThread.start()
-            self.enableVelocityPlot()
+            self.read_thread.start()
+            self.enable_velocity_plot()
         else:
-            self.print2Console("Serial connection terminated.\n")
-            self.readThread.running = False
-            self.connectButton.setProperty("text", "Connect")
+            self.print_to_console("Serial connection terminated.\n")
+            self.read_thread.running = False
+            self.connect_button.setProperty("text", "Connect")
             self.ports_widget.setEnabled(False)
-            self.disableVelocityPlot()
-            self.getTreadmills()
+            self.disable_velocity_plot()
+            self.get_treadmills()
 
-    def connectButtonAction(self):
-        if not self.readThread.running:
-            self.print2Console("Connecting to treadmill on port " +
-                               self.treadmillListDropdown.currentData(0) + ".")
-            self.treadmill.connect(self.treadmillListDropdown.currentData(0))
+    def connect_button_action(self):
+        if not self.read_thread.running:
+            self.print_to_console("Connecting to treadmill on port " +
+                               self.treadmill_list_dropdown.currentData(0) + ".")
+            self.treadmill.connect(self.treadmill_list_dropdown.currentData(0))
         else:
             self.treadmill.close_connection()
 
-    def printTreadmillData(self, text):
-        self.treadmillDataPrinter.setPlainText(text)
+    def print_treadmill_data(self, text):
+        self.treadmill_data_printer.setPlainText(text)
 
-    def print2Console(self, text):
-        self.mainConsole.appendPlainText(text)
+    def print_to_console(self, text):
+        self.main_console.appendPlainText(text)
 
-    def enableVelocityPlot(self):
-        self.plotWidget.enable()
-        self.plotTimer.start(5)
+    def enable_velocity_plot(self):
+        self.plot_widget.enable()
+        self.plot_timer.start(5)
 
-    def disableVelocityPlot(self):
-        self.plotTimer.stop()
-        self.plotWidget.disable()
+    def disable_velocity_plot(self):
+        self.plot_timer.stop()
+        self.plot_widget.disable()
 
     def update_plot(self):
-        self.plotWidget.update_plot(self.readThread.treadmillData, self.treadmill.recording)
+        self.plot_widget.update_plot(self.read_thread.treadmill_data, self.treadmill.recording)
 
     def change_plot_color(self):
-        self.plotWidget.update_color(self.treadmill)
+        self.plot_widget.update_color(self.treadmill)
 
     def close_application(self):
         choice = QMessageBox.question(self, 'Message',

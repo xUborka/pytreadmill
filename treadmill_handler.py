@@ -95,5 +95,5 @@ class Treadmill(QObject):
         self.update_treadmill_state()
         return self.treadmill_data
 
-    def writeData(self, data):
+    def write_data(self, data):
         self.serial_object.write(bytes(data, 'ascii'))

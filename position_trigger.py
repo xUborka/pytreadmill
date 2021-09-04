@@ -8,50 +8,50 @@ class PositionTriggerWorker(QObject):
 
     def __init__(self, parent_trigger_data, parent=None):
         super().__init__(parent)
-        self.positionTriggerData = parent_trigger_data
+        self.position_trigger_data = parent_trigger_data
 
-        self.isRunning = True
-        self.isSingleShot = True
-        self.hasFired = False
+        self.is_running = True
+        self.is_single_shot = True
+        self.has_fired = False
 
-        self.triggerTimer = QTimer(self)
-        self.triggerTimer.setSingleShot(False)
-        self.triggerTimer.timeout.connect(self.trigger)
+        self.trigger_timer = QTimer(self)
+        self.trigger_timer.setSingleShot(False)
+        self.trigger_timer.timeout.connect(self.trigger)
 
-        self.checkerTimer = QTimer(self)
-        self.checkerTimer.setSingleShot(False)
-        self.checkerTimer.timeout.connect(self.checkPosition)
+        self.check_timer = QTimer(self)
+        self.check_timer.setSingleShot(False)
+        self.check_timer.timeout.connect(self.check_position)
 
     def process(self):
-        self.hasFired = False
-        self.checkerTimer.start(self.checkerInterval)
+        self.has_fired = False
+        self.check_timer.start(self.checkerInterval)
 
     def trigger(self):
-        if self.isSingleShot:
-            if not self.hasFired:
+        if self.is_single_shot:
+            if not self.has_fired:
                 self.triggerSignal.emit()
         else:
             self.triggerSignal.emit()
-        self.hasFired = True
+        self.has_fired = True
 
-    def setTimerSingleShot(self, isSingleShot):
-        self.isSingleShot = isSingleShot
+    def set_timer_single_shot(self, is_single_shot):
+        self.is_single_shot = is_single_shot
 
-    def updateTriggerInterval(self):
-        self.triggerTimer.setInterval(self.positionTriggerData.retention)
+    def update_trigger_interval(self):
+        self.trigger_timer.setInterval(self.position_trigger_data.retention)
 
-    def checkPosition(self):
-        treadmill_data = self.positionTriggerData.port.treadmill_data.treadmillData
-        if self.positionTriggerData.start < treadmill_data.rel_position < \
-           self.positionTriggerData.start + self.positionTriggerData.window:
-            if not self.triggerTimer.isActive():
-                self.triggerTimer.start(self.positionTriggerData.retention)
+    def check_position(self):
+        treadmill_data = self.position_trigger_data.port.treadmill_data.treadmill_data
+        if self.position_trigger_data.start < treadmill_data.rel_position < \
+           self.position_trigger_data.start + self.position_trigger_data.window:
+            if not self.trigger_timer.isActive():
+                self.trigger_timer.start(self.position_trigger_data.retention)
         else:
-            self.hasFired = False
-            self.triggerTimer.stop()
+            self.has_fired = False
+            self.trigger_timer.stop()
 
     def terminate(self):
-        self.isRunning = False
-        self.hasFired = False
-        self.checkerTimer.stop()
-        self.triggerTimer.stop()
+        self.is_running = False
+        self.has_fired = False
+        self.check_timer.stop()
+        self.trigger_timer.stop()

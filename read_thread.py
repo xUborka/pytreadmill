@@ -5,80 +5,80 @@ from interfaces.treadmill_data import TreadmillData
 
 
 class ReadThread(QThread):
-    printDataSignal = pyqtSignal(str)
-    messageSignal = pyqtSignal(str)
-    treadmillStateChanged = pyqtSignal(str)
+    print_data_signal = pyqtSignal(str)
+    message_signal = pyqtSignal(str)
+    treadmill_state_changed = pyqtSignal(str)
 
     def __init__(self, treadmill, parent=None):
-        super(ReadThread, self).__init__(parent)
+        super().__init__(parent)
         self.treadmill = treadmill
         self.initialized = False
         self.running = False
         self.record = False
-        self.saveFolder = None
-        self.measurementCount = 0
-        self.portList = list()
-        self.treadmillData = TreadmillData()
+        self.save_folder = None
+        self.measurement_count = 0
+        self.port_list = list()
+        self.treadmill_data = TreadmillData()
 
         self.treadmill_data_list = list()
 
-    def printData2GUI(self, prefix):
-        self.printDataSignal.emit(prefix +
-                                  "   |   v = " + str(self.treadmillData.velocity) +
-                                  "   |   abs. position = " + str(self.treadmillData.abs_position) +
-                                  "   |   lap = " + str(self.treadmillData.lap) +
-                                  "   |   rel. position = " + str(self.treadmillData.rel_position) + "    ")
+    def print_data_to_gui(self, prefix):
+        self.print_data_signal.emit(prefix +
+                                  "   |   v = " + str(self.treadmill_data.velocity) +
+                                  "   |   abs. position = " + str(self.treadmill_data.abs_position) +
+                                  "   |   lap = " + str(self.treadmill_data.lap) +
+                                  "   |   rel. position = " + str(self.treadmill_data.rel_position) + "    ")
 
-    def checkPortStates(self):
-        for portListInstance, portState in zip(self.portList, self.treadmillData.port_states):
-            if not portListInstance.port.groupboxPositionTrigger.isChecked():
-                if portListInstance.is_active != portState:
-                    portListInstance.port.switchButton.setChecked(bool(portState))
+    def check_port_states(self):
+        for port_list_instance, port_state in zip(self.port_list, self.treadmill_data.port_states):
+            if not port_list_instance.port.groupboxPositionTrigger.isChecked():
+                if port_list_instance.is_active != port_state:
+                    port_list_instance.port.switchButton.setChecked(bool(port_state))
 
-    def finishRecording(self, filename):
+    def finish_recording(self, filename):
         self.record = False
-        self.messageSignal.emit('Recording #' + str(self.measurementCount) + ' finished.\n')
+        self.message_signal.emit('Recording #' + str(self.measurement_count) + ' finished.\n')
         GTools.write_to_file(filename, self.treadmill_data_list)
         self.treadmill_data_list.clear()
-        self.messageSignal.emit('Data written to: ' + filename + '\n')
-        self.messageSignal.emit("Waiting for trigger...")
+        self.message_signal.emit('Data written to: ' + filename + '\n')
+        self.message_signal.emit("Waiting for trigger...")
 
-    def sendInitializationSignal(self):
+    def send_init_signal(self):
         if self.initialized:
-            self.treadmillStateChanged.emit("initialized")
+            self.treadmill_state_changed.emit("initialized")
         else:
-            self.treadmillStateChanged.emit("uninitialized")
+            self.treadmill_state_changed.emit("uninitialized")
 
     def run(self):
         self.record = False
-        self.measurementCount = 0
+        self.measurement_count = 0
 
         self.treadmill_data_list.clear()
-        self.messageSignal.emit("Waiting for trigger...")
+        self.message_signal.emit("Waiting for trigger...")
 
         while self.running and self.treadmill.connected:
-            self.treadmillData = self.treadmill.read_data()
-            self.printData2GUI("")
-            self.checkPortStates()
-            if self.initialized != self.treadmillData.initialized:
-                self.initialized = bool(self.treadmillData.initialized)
-                self.sendInitializationSignal()
+            self.treadmill_data = self.treadmill.read_data()
+            self.print_data_to_gui("")
+            self.check_port_states()
+            if self.initialized != self.treadmill_data.initialized:
+                self.initialized = bool(self.treadmill_data.initialized)
+                self.send_init_signal()
 
-            if self.treadmillData.recording == 1:
+            if self.treadmill_data.recording == 1:
                 self.record = True
-                self.measurementCount += 1
-                self.treadmillStateChanged.emit("recording")
+                self.measurement_count += 1
+                self.treadmill_state_changed.emit("recording")
 
-                startDate = time.strftime("%Y-%m-%d %H_%M_%S")
-                self.messageSignal.emit('Recording #' + str(self.measurementCount) + ' started @' + startDate)
-                filename = self.saveFolder + '/' + startDate + " (" + str(self.measurementCount).zfill(3) + ").csv"
+                start_date = time.strftime("%Y-%m-%d %H_%M_%S")
+                self.message_signal.emit('Recording #' + str(self.measurement_count) + ' started @' + start_date)
+                filename = self.save_folder + '/' + start_date + " (" + str(self.measurement_count).zfill(3) + ").csv"
 
             while self.running and self.record:
-                self.printData2GUI(str("Recording... " +
-                                       time.strftime("%M:%S", time.gmtime(int(self.treadmillData.time) / 1000))))
-                self.treadmill_data_list.append(self.treadmillData)
-                self.treadmillData = self.treadmill.readData()
+                self.print_data_to_gui(str("Recording... " +
+                                       time.strftime("%M:%S", time.gmtime(int(self.treadmill_data.time) / 1000))))
+                self.treadmill_data_list.append(self.treadmill_data)
+                self.treadmill_data = self.treadmill.readData()
 
-                if self.treadmillData.recording == 0:
-                    self.finishRecording(filename)
-                    self.sendInitializationSignal()
+                if self.treadmill_data.recording == 0:
+                    self.finish_recording(filename)
+                    self.send_init_signal()
