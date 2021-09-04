@@ -43,7 +43,7 @@ class PositionTriggerWorker(QObject):
     def checkPosition(self):
         treadmill_data = self.positionTriggerData.port.treadmill_data.treadmillData
         if self.positionTriggerData.start < treadmill_data.rel_position < \
-            self.positionTriggerData.start + self.positionTriggerData.window:
+           self.positionTriggerData.start + self.positionTriggerData.window:
             if not self.triggerTimer.isActive():
                 self.triggerTimer.start(self.positionTriggerData.retention)
         else:
