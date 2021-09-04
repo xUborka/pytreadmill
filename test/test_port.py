@@ -1,5 +1,5 @@
 # from Port import Port
-from pytreadmill import Window
+from main_window import Window
 
 
 def test_empty_init(qtbot):
