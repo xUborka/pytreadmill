@@ -3,7 +3,7 @@ import json
 
 
 class GTools:
-    SAVE_FOLDER_PATH = os.getcwd()
+    SAVE_FOLDER_PATH = os.path.join(os.getcwd(), 'results')
     PROJECT_CONFIG_PATH = os.path.join("res", "cfg.json")
 
     @staticmethod
