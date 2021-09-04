@@ -77,7 +77,7 @@ class ReadThread(QThread):
                 self.print_data_to_gui(str("Recording... " +
                                        time.strftime("%M:%S", time.gmtime(int(self.treadmill_data.time) / 1000))))
                 self.treadmill_data_list.append(self.treadmill_data)
-                self.treadmill_data = self.treadmill.readData()
+                self.treadmill_data = self.treadmill.read_data()
 
                 if self.treadmill_data.recording == 0:
                     self.finish_recording(filename)
