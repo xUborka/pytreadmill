@@ -31,9 +31,9 @@ class ReadThread(QThread):
 
     def check_port_states(self):
         for port_list_instance, port_state in zip(self.port_list, self.treadmill_data.port_states):
-            if not port_list_instance.port.groupboxPositionTrigger.isChecked():
+            if not port_list_instance.port.groupbox_position_trigger.isChecked():
                 if port_list_instance.is_active != port_state:
-                    port_list_instance.port.switchButton.setChecked(bool(port_state))
+                    port_list_instance.port.switch_button.setChecked(bool(port_state))
 
     def finish_recording(self, filename):
         self.record = False
