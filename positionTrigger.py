@@ -11,6 +11,7 @@ class PositionTriggerWorker(QObject):
         self.readThread = parent_trigger_data.port.readThread
 
         self.isRunning = True
+        self.isRecording = False
         self.isSingleShot = True
         self.hasFired = False
 
@@ -43,12 +44,24 @@ class PositionTriggerWorker(QObject):
 
     def checkPosition(self):
         treadmill_data = self.readThread.treadmillData
-        if self.positionTriggerData.start < treadmill_data.relPosition < self.positionTriggerData.start + self.positionTriggerData.window:
-            if not self.triggerTimer.isActive():
-                self.triggerTimer.start(self.positionTriggerData.retention)
-        else:
-            self.hasFired = False
-            self.triggerTimer.stop()
+        if not self.isRecording and treadmill_data.recording:
+            self.isRecording = True
+
+        if self.isRecording:
+            inZone = self.positionTriggerData.start < treadmill_data.relPosition < self.positionTriggerData.start + self.positionTriggerData.window
+            if inZone:
+                if not self.triggerTimer.isActive():
+                    self.triggerTimer.start(self.positionTriggerData.retention)
+                if not treadmill_data.recording:
+                    self.isRecording = False
+                    self.hasFired = False
+                    self.triggerTimer.stop()
+            elif not inZone:
+                self.hasFired = False
+                self.triggerTimer.stop()
+
+        if self.isRecording and not treadmill_data.recording:
+            self.isRecording = False
 
     def terminate(self):
         self.isRunning = False
