@@ -32,7 +32,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest -v
+        python -m pytest -v
       env:
         PYTEST_QT_API: pyqt5
         QT_QPA_PLATFORM: offscreen
