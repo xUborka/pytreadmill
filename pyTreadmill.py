@@ -2,7 +2,7 @@ import sys
 import os
 from PyQt5.QtCore import QSize, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QComboBox, QMessageBox, \
+from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
 from Treadmill import Treadmill
 from ReadThreadClass import ReadThreadClass
@@ -193,9 +193,3 @@ class Window(QWidget):
             sys.exit()
         else:
             pass
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    Gui = Window()
-    sys.exit(app.exec_())

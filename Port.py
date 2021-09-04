@@ -160,6 +160,6 @@ class Port(QWidget):
         else:
             self.worker.terminate()
 
-    def enableChildrenWidgets(self, object):
-        for child in object.findChildren(QWidget):
+    def enableChildrenWidgets(self, obj):
+        for child in obj.findChildren(QWidget):
             child.setEnabled(True)
