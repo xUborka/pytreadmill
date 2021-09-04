@@ -1,8 +1,5 @@
 import unittest
-# from PyQt5.QtCore import QThread, pyqtSignal, QTimer, QObject
-# from positionTrigger import PositionTriggerWorker
 from interfaces.position_trigger_data import PositionTriggerData
-# from Port import Port
 
 
 class TestPositionTrigerData(unittest.TestCase):

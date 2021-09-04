@@ -8,23 +8,23 @@ class TreadmillData:
         self.time = int(t)
         self.recording = int(rec)
         self.velocity = int(vel)
-        self.absPosition = int(abs_pos)
+        self.abs_position = int(abs_pos)
         self.lap = int(lap)
-        self.relPosition = int(rel_pos)
+        self.rel_position = int(rel_pos)
         self.lick = int(lick)
         self.initialized = int(init)
-        self.portStates = list(map(int, port_states))
+        self.port_states = list(map(int, port_states))
 
     def invalidate(self):
         self.time = 0
         self.recording = -1
         self.velocity = 0
-        self.absPosition = 0
+        self.abs_position = 0
         self.lap = 0
-        self.relPosition = 0
+        self.rel_position = 0
         self.lick = 0
         self.initialized = 0
-        self.portStates = [0, 0, 0]
+        self.port_states = [0, 0, 0]
 
     def __str__(self) -> str:
-        return ','.join(map(str, [self.time, self.velocity, self.absPosition, self.lap, self.relPosition, self.lick]))
+        return ', '.join(map(str, [self.time, self.velocity, self.abs_position, self.lap, self.rel_position, self.lick]))

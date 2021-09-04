@@ -2,6 +2,7 @@ import time
 import numpy as np
 import pyqtgraph as pg
 
+
 class PlotWidget(pg.PlotWidget):
     def __init__(self):
         super().__init__(name='velocity plot')
@@ -25,10 +26,10 @@ class PlotWidget(pg.PlotWidget):
         self.velocity_curve.setPos(-1000, 0)
         treadmill_time = time.strftime("%M:%S", time.gmtime(int(data.time) / 1000))
         tmp_plot_text = str("time: " + treadmill_time + "\n" +
-                          "velocity: " + str(data.velocity) + "\n" +
-                          "abs. position: " + str(data.absPosition) + "\n" +
-                          "lap: " + str(data.lap) + "\n" +
-                          "rel. position: " + str(data.relPosition) + "\n")
+                            "velocity: " + str(data.velocity) + "\n" +
+                            "abs. position: " + str(data.abs_position) + "\n" +
+                            "lap: " + str(data.lap) + "\n" +
+                            "rel. position: " + str(data.rel_position) + "\n")
         if recording:
             tmp_plot_text = str(tmp_plot_text + "🔴 REC")
         self.plot_text.setText(text=tmp_plot_text)

@@ -1,5 +1,7 @@
 [MASTER]
 
+init-hook='import sys; import os; sys.path.append(os.getcwd())'
+
 extension-pkg-whitelist=PyQt5
 
 # Return non-zero exit code if any of these messages/categories are detected,
