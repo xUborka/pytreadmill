@@ -6,94 +6,94 @@ from interfaces.treadmill_data import TreadmillData
 
 
 class Treadmill(QObject):
-    connectionSignal = pyqtSignal(bool)
-    initializationSignal = pyqtSignal(bool)
-    recordSignal = pyqtSignal(bool)
+    connection_signal = pyqtSignal(bool)
+    init_signal = pyqtSignal(bool)
+    record_signal = pyqtSignal(bool)
 
     def __init__(self):
-        super(Treadmill, self).__init__()
+        super().__init__()
 
         self.connected = False
         self.initialized = False
         self.recording = False
 
-        self.treadmillData = TreadmillData()
+        self.treadmill_data = TreadmillData()
 
-        self.serialObject = None
+        self.serial_object = None
 
-        self.connectionSignal.connect(self.setConnectionState)
-        self.initializationSignal.connect(self.setInitializationState)
-        self.recordSignal.connect(self.setRecordingState)
+        self.connection_signal.connect(self.set_connection_state)
+        self.init_signal.connect(self.set_initialization_state)
+        self.record_signal.connect(self.set_recording_state)
 
     @staticmethod
-    def findTreadmills():
+    def find_treadmills():
         print([p.device for p in serial.tools.list_ports.comports()])
-        arduinoPorts = [
+        ardunio_ports = [
             p.device
             for p in serial.tools.list_ports.comports()
             if p.serial_number == "A600HISAA" or p.pid == 32847 or p.pid == 67]
-        return arduinoPorts
+        return ardunio_ports
 
     def connect(self, port):
         print('Connecting to Treadmill on port ' + port + '\n')
-        self.serialObject = None
+        self.serial_object = None
 
         try:  # ...to connect to treadmill
-            self.serialObject = serial.Serial(port, 115200)
+            self.serial_object = serial.Serial(port, 115200)
         except serial.SerialException as exc:
             print(exc)
-            self.connectionSignal.emit(False)
+            self.connection_signal.emit(False)
             return False
         else:
             print("Serial connection established.\n")
-            self.connectionSignal.emit(True)
+            self.connection_signal.emit(True)
             return True
 
-    def closeConnection(self):
-        self.serialObject.close()
-        self.connectionSignal.emit(False)
+    def close_connection(self):
+        self.serial_object.close()
+        self.connection_signal.emit(False)
         print("Serial connection terminated.")
 
-    def setConnectionState(self, state: bool):
+    def set_connection_state(self, state: bool):
         self.connected = state
 
-    def setInitializationState(self, state: bool):
+    def set_initialization_state(self, state: bool):
         self.initialized = state
 
-    def setRecordingState(self, state: bool):
+    def set_recording_state(self, state: bool):
         self.recording = state
 
-    def updateTreadmillState(self):
-        if self.treadmillData.initialized != self.initialized:
-            if 1 == self.treadmillData.initialized:
-                self.initializationSignal.emit(True)
+    def update_treadmill_state(self):
+        if self.treadmill_data.initialized != self.initialized:
+            if self.treadmill_data.initialized == 1:
+                self.init_signal.emit(True)
             else:
-                self.initializationSignal.emit(False)
+                self.init_signal.emit(False)
 
-        if self.treadmillData.recording != self.recording:
-            if 1 == self.treadmillData.recording:
-                self.recordSignal.emit(True)
+        if self.treadmill_data.recording != self.recording:
+            if self.treadmill_data.recording == 1:
+                self.record_signal.emit(True)
             else:
-                self.recordSignal.emit(False)
+                self.record_signal.emit(False)
 
-    def readData(self):
+    def read_data(self):
         try:
-            serialInput = self.serialObject.readline()
-            serialInput = serialInput.decode(encoding='ascii')
-            serialInput = serialInput.rstrip()
-            self.treadmillData = TreadmillData(*serialInput.split(" "))
+            serial_input = self.serial_object.readline()
+            serial_input = serial_input.decode(encoding='ascii')
+            serial_input = serial_input.rstrip()
+            self.treadmill_data = TreadmillData(*serial_input.split(" "))
         except serial.SerialException as exc:
             GTools.error_message("Treadmill unplugged", exc)
-            self.connectionSignal.emit(False)
-            self.treadmillData.invalidate()
+            self.connection_signal.emit(False)
+            self.treadmill_data.invalidate()
         except (ValueError, UnicodeDecodeError) as exc:
             GTools.error_message("Serial communication error", exc)
-            self.treadmillData.invalidate()
+            self.treadmill_data.invalidate()
         except Exception as exc:
             GTools.error_message("Unknown error during reading serial data", exc)
-            self.treadmillData.invalidate()
-        self.updateTreadmillState()
-        return self.treadmillData
+            self.treadmill_data.invalidate()
+        self.update_treadmill_state()
+        return self.treadmill_data
 
     def writeData(self, data):
-        self.serialObject.write(bytes(data, 'ascii'))
+        self.serial_object.write(bytes(data, 'ascii'))

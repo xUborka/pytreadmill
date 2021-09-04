@@ -6,7 +6,7 @@ class PositionTriggerWorker(QObject):
     checkerInterval = 50
 
     def __init__(self, parent_trigger_data, parent=None):
-        super(PositionTriggerWorker, self).__init__(parent)
+        super().__init__(parent)
         self.positionTriggerData = parent_trigger_data
 
         self.isRunning = True
@@ -42,7 +42,7 @@ class PositionTriggerWorker(QObject):
 
     def checkPosition(self):
         treadmill_data = self.positionTriggerData.port.treadmill_data.treadmillData
-        if self.positionTriggerData.start < treadmill_data.relPosition < self.positionTriggerData.start + self.positionTriggerData.window:
+        if self.positionTriggerData.start < treadmill_data.rel_position < self.positionTriggerData.start + self.positionTriggerData.window:
             if not self.triggerTimer.isActive():
                 self.triggerTimer.start(self.positionTriggerData.retention)
         else:

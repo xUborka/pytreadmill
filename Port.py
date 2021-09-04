@@ -9,7 +9,7 @@ class Port(QWidget):
     positionTriggerChangedSignal = pyqtSignal(object)
 
     def __init__(self, name, port_list, treadmill_data, treadmill):
-        super(Port, self).__init__()
+        super().__init__()
         self.name = name
         self.treadmill = treadmill
         self.treadmill_data = treadmill_data
@@ -113,7 +113,6 @@ class Port(QWidget):
             self.clicked = True
 
     def pulseSignalAction(self):
-        print("PULSE")
         self.pulseTimer.start(self.editTriggerDuration.value())
 
     def pulseRepetitionButtonAction(self, checked):

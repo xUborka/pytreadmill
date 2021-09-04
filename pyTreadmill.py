@@ -4,7 +4,7 @@ from PyQt5.QtCore import QSize, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
-from Treadmill import Treadmill
+from treadmill import Treadmill
 from ReadThreadClass import ReadThreadClass
 from gtools import GTools
 from widgets.plot_widget import PlotWidget
@@ -18,9 +18,9 @@ class Window(QWidget):
 
         # INVISIBLE OBJECTS
         self.treadmill = Treadmill()
-        self.treadmill.connectionSignal.connect(self.treadmillConnectionHandler)
-        self.treadmill.initializationSignal.connect(self.change_plot_color)
-        self.treadmill.recordSignal.connect(self.change_plot_color)
+        self.treadmill.connection_signal.connect(self.treadmillConnectionHandler)
+        self.treadmill.init_signal.connect(self.change_plot_color)
+        self.treadmill.record_signal.connect(self.change_plot_color)
 
         # Read thread
         self.readThread = ReadThreadClass(self.treadmill)
@@ -118,14 +118,14 @@ class Window(QWidget):
             self.connectButton.setProperty("enabled", True)
 
     def init_folder(self):
-        self.readThread.saveFolder = os.getcwd()
+        self.readThread.saveFolder = GTools.get_save_folder()
         self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
 
     def selectFolder(self):
         self.readThread.saveFolder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
         if os.path.isdir(self.readThread.saveFolder):
-            GTools.updateSaveFolder(self.readThread.saveFolder)
+            GTools.update_save_folder(self.readThread.saveFolder)
             self.print2Console(f"Save folder set to: {self.readThread.saveFolder} \n")
         else:
             self.readThread.saveFolder = None
@@ -135,7 +135,7 @@ class Window(QWidget):
 
     def getTreadmills(self):
         self.treadmillListDropdown.clear()
-        self.treadmillList = Treadmill.findTreadmills()
+        self.treadmillList = Treadmill.find_treadmills()
         self.treadmillListDropdown.addItems(self.treadmillList)
         self.checkConnectRequirement()
 
@@ -162,7 +162,7 @@ class Window(QWidget):
                                self.treadmillListDropdown.currentData(0) + ".")
             self.treadmill.connect(self.treadmillListDropdown.currentData(0))
         else:
-            self.treadmill.closeConnection()
+            self.treadmill.close_connection()
 
     def printTreadmillData(self, text):
         self.treadmillDataPrinter.setPlainText(text)

@@ -25,12 +25,12 @@ class ReadThreadClass(QThread):
     def printData2GUI(self, prefix):
         self.printDataSignal.emit(prefix +
                                   "   |   v = " + str(self.treadmillData.velocity) +
-                                  "   |   abs. position = " + str(self.treadmillData.absPosition) +
+                                  "   |   abs. position = " + str(self.treadmillData.abs_position) +
                                   "   |   lap = " + str(self.treadmillData.lap) +
-                                  "   |   rel. position = " + str(self.treadmillData.relPosition) + "    ")
+                                  "   |   rel. position = " + str(self.treadmillData.rel_position) + "    ")
 
     def checkPortStates(self):
-        for portListInstance, portState in zip(self.portList, self.treadmillData.portStates):
+        for portListInstance, portState in zip(self.portList, self.treadmillData.port_states):
             if not portListInstance.port.groupboxPositionTrigger.isChecked():
                 if portListInstance.is_active != portState:
                     portListInstance.port.switchButton.setChecked(bool(portState))
@@ -38,7 +38,7 @@ class ReadThreadClass(QThread):
     def finishRecording(self, filename):
         self.record = False
         self.messageSignal.emit('Recording #' + str(self.measurementCount) + ' finished.\n')
-        GTools.write2File(filename, self.treadmill_data_list)
+        GTools.write_to_file(filename, self.treadmill_data_list)
         self.treadmill_data_list.clear()
         self.messageSignal.emit('Data written to: ' + filename + '\n')
         self.messageSignal.emit("Waiting for trigger...")
@@ -57,7 +57,7 @@ class ReadThreadClass(QThread):
         self.messageSignal.emit("Waiting for trigger...")
 
         while self.running and self.treadmill.connected:
-            self.treadmillData = self.treadmill.readData()
+            self.treadmillData = self.treadmill.read_data()
             self.printData2GUI("")
             self.checkPortStates()
             if self.initialized != self.treadmillData.initialized:
