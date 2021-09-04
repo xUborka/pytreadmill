@@ -1,6 +1,7 @@
 # from Port import Port
 from pyTreadmill import Window
 
+
 def test_empty_init(qtbot):
     # pass
     dummy_window = Window()

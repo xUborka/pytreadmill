@@ -3,6 +3,7 @@ import json
 import unittest
 from gtools import GTools
 
+
 class TestPositionTrigerData(unittest.TestCase):
     def test_get_project_config(self):
         # Init

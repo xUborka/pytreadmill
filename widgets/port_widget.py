@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGroupBox
 from Port import Port
 
+
 class PortWidget(QGroupBox):
     def __init__(self, port_list, get_treadmill_data, treadmill):
         super().__init__("Port Settings")

@@ -1,5 +1,6 @@
 from PyQt5.QtCore import pyqtSignal, QTimer, QObject
 
+
 class PositionTriggerWorker(QObject):
     triggerSignal = pyqtSignal()
     finishedSignal = pyqtSignal()
@@ -25,7 +26,6 @@ class PositionTriggerWorker(QObject):
         self.hasFired = False
         self.checkerTimer.start(self.checkerInterval)
 
-
     def trigger(self):
         if self.isSingleShot:
             if not self.hasFired:
@@ -42,7 +42,8 @@ class PositionTriggerWorker(QObject):
 
     def checkPosition(self):
         treadmill_data = self.positionTriggerData.port.treadmill_data.treadmillData
-        if self.positionTriggerData.start < treadmill_data.rel_position < self.positionTriggerData.start + self.positionTriggerData.window:
+        if self.positionTriggerData.start < treadmill_data.rel_position < \
+            self.positionTriggerData.start + self.positionTriggerData.window:
             if not self.triggerTimer.isActive():
                 self.triggerTimer.start(self.positionTriggerData.retention)
         else:
