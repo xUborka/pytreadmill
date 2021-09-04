@@ -129,7 +129,7 @@ class Window(QWidget):
             self.print_to_console(f"Save folder set to: {self.read_thread.save_folder} \n")
         else:
             self.read_thread.save_folder = None
-            self.print_to_console("No valid save folder was set.")
+            self.print_to_console("No valid save folder was set.\n")
 
         self.check_connection_requirement()
 

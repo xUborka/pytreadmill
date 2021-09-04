@@ -3,17 +3,17 @@ from widgets.port_widget import PortWidget
 
 
 class PortGroupWidget(QGroupBox):
-    def __init__(self, port_list, get_treadmill_data, treadmill):
+    def __init__(self, port_list, read_thread, treadmill):
         super().__init__("Port Settings")
-        self.port_a = PortWidget("A", port_list, get_treadmill_data, treadmill)
+        self.port_a = PortWidget("A", port_list, read_thread, treadmill)
         layout_port_a = PortGroupWidget.init_port_ui(self.port_a)
 
         # Port B Widgets
-        self.port_b = PortWidget("B", port_list, get_treadmill_data, treadmill)
+        self.port_b = PortWidget("B", port_list, read_thread, treadmill)
         layout_port_b = PortGroupWidget.init_port_ui(self.port_b)
 
         # Port C Widgets
-        self.port_c = PortWidget("C", port_list, get_treadmill_data, treadmill)
+        self.port_c = PortWidget("C", port_list, read_thread, treadmill)
         layout_port_c = PortGroupWidget.init_port_ui(self.port_c)
 
         # Layout for All Port Layouts
