@@ -1,7 +1,7 @@
 import os
 import json
 import unittest
-from gtools import GTools
+from model.gtools import GTools
 
 
 class TestPositionTrigerData(unittest.TestCase):

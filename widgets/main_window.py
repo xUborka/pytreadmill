@@ -4,9 +4,9 @@ from PyQt5.QtCore import QSize, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
-from treadmill_handler import Treadmill
-from read_thread import ReadThread
-from gtools import GTools
+from model.treadmill_handler import Treadmill
+from model.read_thread import ReadThread
+from model.gtools import GTools
 from widgets.plot_widget import PlotWidget
 from widgets.port_group_widget import PortGroupWidget
 

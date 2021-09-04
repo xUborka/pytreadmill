@@ -1,6 +1,6 @@
 import time
 from PyQt5.QtCore import QThread, pyqtSignal
-from gtools import GTools
+from model.gtools import GTools
 from interfaces.treadmill_data import TreadmillData
 
 

@@ -1,5 +1,5 @@
 # from Port import Port
-from main_window import Window
+from widgets.main_window import Window
 
 
 def test_empty_init(qtbot):

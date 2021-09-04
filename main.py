@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from pytreadmill import Window
+from widgets.main_window import Window
 
 
 if __name__ == "__main__":
