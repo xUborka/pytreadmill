@@ -7,7 +7,7 @@ from model.gtools import GTools
 class TestPositionTrigerData(unittest.TestCase):
     def test_get_project_config(self):
         # Init
-        GTools.PROJECT_CONFIG_PATH = os.path.join("test", "test_config.json")
+        GTools.PROJECT_CONFIG_PATH = os.path.join("model", "test", "test_config.json")
         dummy_test_data = {'save_folder': 'path_to_folder', 'other_config': 'config_value'}
         with open(GTools.PROJECT_CONFIG_PATH, "w") as test_config:
             json.dump(dummy_test_data, test_config)
@@ -21,7 +21,7 @@ class TestPositionTrigerData(unittest.TestCase):
     def test_get_save_folder_not_equal_paths(self):
         # Init
         GTools.SAVE_FOLDER_PATH = "valid_value"
-        GTools.PROJECT_CONFIG_PATH = os.path.join("test", "test_config.json")
+        GTools.PROJECT_CONFIG_PATH = os.path.join("model", "test", "test_config.json")
         dummy_test_data = {'save_folder': 'invalid_value', 'other_config': 'config_value'}
         with open(GTools.PROJECT_CONFIG_PATH, "w") as test_config:
             json.dump(dummy_test_data, test_config)
@@ -35,7 +35,7 @@ class TestPositionTrigerData(unittest.TestCase):
     def test_get_save_folder_equal_paths(self):
         # Init
         GTools.SAVE_FOLDER_PATH = "test_value"
-        GTools.PROJECT_CONFIG_PATH = os.path.join("test", "test_config.json")
+        GTools.PROJECT_CONFIG_PATH = os.path.join("model", "test", "test_config.json")
         dummy_test_data = {'save_folder': 'test_value', 'other_config': 'config_value'}
         with open(GTools.PROJECT_CONFIG_PATH, "w") as test_config:
             json.dump(dummy_test_data, test_config)
