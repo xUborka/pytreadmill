@@ -22,13 +22,6 @@ class ReadThread(QThread):
 
         self.treadmill_data_list = list()
 
-    def print_data_to_gui(self, prefix):
-        self.print_data_signal.emit(prefix +
-                                  "   |   v = " + str(self.treadmill_data.velocity) +
-                                  "   |   abs. position = " + str(self.treadmill_data.abs_position) +
-                                  "   |   lap = " + str(self.treadmill_data.lap) +
-                                  "   |   rel. position = " + str(self.treadmill_data.rel_position) + "    ")
-
     def check_port_states(self):
         for port_list_instance, port_state in zip(self.port_list, self.treadmill_data.port_states):
             if not port_list_instance.port.groupbox_position_trigger.isChecked():
@@ -58,7 +51,6 @@ class ReadThread(QThread):
 
         while self.running and self.treadmill.connected:
             self.treadmill_data = self.treadmill.read_data()
-            self.print_data_to_gui("")
             self.check_port_states()
             if self.initialized != self.treadmill_data.initialized:
                 self.initialized = bool(self.treadmill_data.initialized)
@@ -74,8 +66,6 @@ class ReadThread(QThread):
                 filename = self.save_folder + '/' + start_date + " (" + str(self.measurement_count).zfill(3) + ").csv"
 
             while self.running and self.record:
-                self.print_data_to_gui(str("Recording... " +
-                                       time.strftime("%M:%S", time.gmtime(int(self.treadmill_data.time) / 1000))))
                 self.treadmill_data_list.append(self.treadmill_data)
                 self.treadmill_data = self.treadmill.read_data()
 

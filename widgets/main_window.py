@@ -21,10 +21,10 @@ class Window(QWidget):
         self.treadmill.connection_signal.connect(self.treadmill_connection_handler)
         self.treadmill.init_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.change_plot_color)
+        self.treadmill.record_signal.connect(self.update_record_button)
 
         # Read thread
         self.read_thread = ReadThread(self.treadmill)
-        self.read_thread.print_data_signal.connect(self.print_treadmill_data)
         self.read_thread.message_signal.connect(self.print_to_console)
         self.read_thread.treadmill_state_changed.connect(self.change_plot_color)
 
@@ -74,11 +74,9 @@ class Window(QWidget):
         # Ports
         self.ports_widget = PortGroupWidget(self.port_list, self.read_thread, self.treadmill)
 
-        self.treadmill_data_printer = QPlainTextEdit()
-        self.treadmill_data_printer.setObjectName("treadmillData")
-        self.treadmill_data_printer.setProperty("readOnly", True)
-        self.treadmill_data_printer.setOverwriteMode(True)
-        self.treadmill_data_printer.setMaximumHeight(30)
+        self.record_button = QPushButton('Record')
+        self.record_button.clicked.connect(self.record_button_action)
+        self.record_button.setProperty("enabled", True)
 
         # Plot
         self.plot_widget = PlotWidget()
@@ -93,6 +91,7 @@ class Window(QWidget):
         main_layout.addLayout(level_one_layout)
         main_layout.addWidget(self.main_console)
         main_layout.addWidget(self.ports_widget)
+        main_layout.addWidget(self.record_button)
         main_layout.addWidget(self.plot_widget)
 
         self.setLayout(main_layout)
@@ -164,8 +163,17 @@ class Window(QWidget):
         else:
             self.treadmill.close_connection()
 
-    def print_treadmill_data(self, text):
-        self.treadmill_data_printer.setPlainText(text)
+    def record_button_action(self):
+        if self.treadmill.recording:
+            self.treadmill.write_data("r")
+        else:
+            self.treadmill.write_data("R")
+
+    def update_record_button(self, recording_state):
+        if recording_state:
+            self.record_button.setText("🔴 REC")
+        else:
+            self.record_button.setText("Record")
 
     def print_to_console(self, text):
         self.main_console.appendPlainText(text)
