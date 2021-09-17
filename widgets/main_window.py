@@ -76,7 +76,7 @@ class Window(QWidget):
 
         self.record_button = QPushButton('Record')
         self.record_button.clicked.connect(self.record_button_action)
-        self.record_button.setProperty("enabled", True)
+        self.record_button.setProperty("enabled", False)
 
         # Plot
         self.plot_widget = PlotWidget()
@@ -143,6 +143,7 @@ class Window(QWidget):
             self.print_to_console("Serial connection established.\n")
             self.read_thread.running = True
             self.connect_button.setProperty("text", "Disconnect")
+            self.record_button.setProperty("enabled", True)
             self.read_thread.port_list = self.port_list
             self.ports_widget.setEnabled(True)
             self.read_thread.start()
@@ -151,6 +152,7 @@ class Window(QWidget):
             self.print_to_console("Serial connection terminated.\n")
             self.read_thread.running = False
             self.connect_button.setProperty("text", "Connect")
+            self.record_button.setProperty("enabled", False)
             self.ports_widget.setEnabled(False)
             self.disable_velocity_plot()
             self.get_treadmills()
