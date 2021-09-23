@@ -84,11 +84,13 @@ class Window(QWidget):
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(
             lambda: self.open_dialog("reset", lambda: self.treadmill.write_data("x")))
+        self.reset_button.setProperty("enabled", False)
 
         # Button - Reinitialize button
         self.reinitialize_button = QPushButton("Reinitialize", self)
         self.reinitialize_button.clicked.connect(
             lambda: self.open_dialog("reinitialize", lambda: self.treadmill.write_data("i")))
+        self.reinitialize_button.setProperty("enabled", False)
 
         # Plot
         self.plot_widget = PlotWidget()
@@ -163,6 +165,8 @@ class Window(QWidget):
             self.print_to_console("Serial connection established.\n")
             self.read_thread.running = True
             self.connect_button.setProperty("text", "Disconnect")
+            self.reset_button.setProperty("enabled", True)
+            self.reinitialize_button.setProperty("enabled", True)
             self.record_button.setProperty("enabled", True)
             self.read_thread.port_list = self.port_list
             self.ports_widget.setEnabled(True)
@@ -172,6 +176,8 @@ class Window(QWidget):
             self.print_to_console("Serial connection terminated.\n")
             self.read_thread.running = False
             self.connect_button.setProperty("text", "Connect")
+            self.reset_button.setProperty("enabled", False)
+            self.reinitialize_button.setProperty("enabled", False)
             self.record_button.setProperty("enabled", False)
             self.ports_widget.setEnabled(False)
             self.disable_velocity_plot()
