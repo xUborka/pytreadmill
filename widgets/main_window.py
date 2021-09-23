@@ -1,8 +1,9 @@
 import sys
 import os
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QMessageBox, \
+from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
 from model.treadmill_handler import Treadmill
 from model.read_thread import ReadThread
@@ -74,24 +75,43 @@ class Window(QWidget):
         # Ports
         self.ports_widget = PortGroupWidget(self.port_list, self.read_thread, self.treadmill)
 
+        # Button - Record button
         self.record_button = QPushButton('Record')
         self.record_button.clicked.connect(self.record_button_action)
         self.record_button.setProperty("enabled", False)
 
+        # Button - Reset button
+        self.reset_button = QPushButton("Reset")
+        self.reset_button.clicked.connect(
+            lambda: self.open_dialog("reset", lambda: self.treadmill.write_data("x")))
+
+        # Button - Reinitialize button
+        self.reinitialize_button = QPushButton("Reinitialize", self)
+        self.reinitialize_button.clicked.connect(
+            lambda: self.open_dialog("reinitialize", lambda: self.treadmill.write_data("i")))
+
         # Plot
         self.plot_widget = PlotWidget()
 
+        # Layouts
         level_one_layout = QHBoxLayout()
         level_one_layout.addWidget(self.browse_button)
         level_one_layout.addWidget(self.treadmill_list_dropdown)
         level_one_layout.addWidget(self.find_treadmills_button)
         level_one_layout.addWidget(self.connect_button)
 
+        record_and_reset_layout = QGridLayout()
+        for ndx in range(3):
+            record_and_reset_layout.addItem(QSpacerItem(110, 10), 0, ndx)
+        record_and_reset_layout.addWidget(self.reinitialize_button, 0, 3)
+        record_and_reset_layout.addWidget(self.reset_button, 0, 4)
+        record_and_reset_layout.addWidget(self.record_button, 0, 5)        
+
         main_layout = QVBoxLayout()
         main_layout.addLayout(level_one_layout)
         main_layout.addWidget(self.main_console)
         main_layout.addWidget(self.ports_widget)
-        main_layout.addWidget(self.record_button)
+        main_layout.addLayout(record_and_reset_layout)
         main_layout.addWidget(self.plot_widget)
 
         self.setLayout(main_layout)
