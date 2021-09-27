@@ -30,10 +30,15 @@ class ReadThread(QThread):
                                   "   |   rel. position = " + str(self.treadmill_data.rel_position) + "    ")
 
     def check_port_states(self):
+        print(self.port_list[0].is_port_active, self.treadmill_data.port_states[0])
         for port_list_instance, port_state in zip(self.port_list, self.treadmill_data.port_states):
             if not port_list_instance.port.groupbox_position_trigger.isChecked():
-                if port_list_instance.is_active != port_state:
-                    port_list_instance.port.switch_button.setChecked(bool(port_state))
+                if port_list_instance.is_port_active != port_state:
+                    print("missmatch ", port_list_instance.is_port_active, port_state)
+                    # port_list_instance.port.switch_button.click()
+                    port_list_instance.is_port_active = bool(port_state)
+                    port_list_instance.port.update_switch_button_visual()
+                    # pass
 
     def finish_recording(self, filename):
         self.record = False
