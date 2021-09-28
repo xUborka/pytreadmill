@@ -1,8 +1,9 @@
 import sys
 import os
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, QTimer
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QPushButton, QComboBox, QMessageBox, \
+from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
 from model.treadmill_handler import Treadmill
 from model.read_thread import ReadThread
@@ -21,10 +22,10 @@ class Window(QWidget):
         self.treadmill.connection_signal.connect(self.treadmill_connection_handler)
         self.treadmill.init_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.change_plot_color)
+        self.treadmill.record_signal.connect(self.update_record_button)
 
         # Read thread
         self.read_thread = ReadThread(self.treadmill)
-        self.read_thread.print_data_signal.connect(self.print_treadmill_data)
         self.read_thread.message_signal.connect(self.print_to_console)
         self.read_thread.treadmill_state_changed.connect(self.change_plot_color)
 
@@ -74,25 +75,45 @@ class Window(QWidget):
         # Ports
         self.ports_widget = PortGroupWidget(self.port_list, self.read_thread, self.treadmill)
 
-        self.treadmill_data_printer = QPlainTextEdit()
-        self.treadmill_data_printer.setObjectName("treadmillData")
-        self.treadmill_data_printer.setProperty("readOnly", True)
-        self.treadmill_data_printer.setOverwriteMode(True)
-        self.treadmill_data_printer.setMaximumHeight(30)
+        # Button - Record button
+        self.record_button = QPushButton('Record')
+        self.record_button.clicked.connect(self.record_button_action)
+        self.record_button.setProperty("enabled", False)
+
+        # Button - Reset button
+        self.reset_button = QPushButton("Reset")
+        self.reset_button.clicked.connect(
+            lambda: self.open_dialog("reset", lambda: self.treadmill.write_data("x")))
+        self.reset_button.setProperty("enabled", False)
+
+        # Button - Reinitialize button
+        self.reinitialize_button = QPushButton("Reinitialize", self)
+        self.reinitialize_button.clicked.connect(
+            lambda: self.open_dialog("reinitialize", lambda: self.treadmill.write_data("i")))
+        self.reinitialize_button.setProperty("enabled", False)
 
         # Plot
         self.plot_widget = PlotWidget()
 
+        # Layouts
         level_one_layout = QHBoxLayout()
         level_one_layout.addWidget(self.browse_button)
         level_one_layout.addWidget(self.treadmill_list_dropdown)
         level_one_layout.addWidget(self.find_treadmills_button)
         level_one_layout.addWidget(self.connect_button)
 
+        record_and_reset_layout = QGridLayout()
+        for ndx in range(3):
+            record_and_reset_layout.addItem(QSpacerItem(110, 10), 0, ndx)
+        record_and_reset_layout.addWidget(self.reinitialize_button, 0, 3)
+        record_and_reset_layout.addWidget(self.reset_button, 0, 4)
+        record_and_reset_layout.addWidget(self.record_button, 0, 5)        
+
         main_layout = QVBoxLayout()
         main_layout.addLayout(level_one_layout)
         main_layout.addWidget(self.main_console)
         main_layout.addWidget(self.ports_widget)
+        main_layout.addLayout(record_and_reset_layout)
         main_layout.addWidget(self.plot_widget)
 
         self.setLayout(main_layout)
@@ -144,6 +165,9 @@ class Window(QWidget):
             self.print_to_console("Serial connection established.\n")
             self.read_thread.running = True
             self.connect_button.setProperty("text", "Disconnect")
+            self.reset_button.setProperty("enabled", True)
+            self.reinitialize_button.setProperty("enabled", True)
+            self.record_button.setProperty("enabled", True)
             self.read_thread.port_list = self.port_list
             self.ports_widget.setEnabled(True)
             self.read_thread.start()
@@ -152,6 +176,9 @@ class Window(QWidget):
             self.print_to_console("Serial connection terminated.\n")
             self.read_thread.running = False
             self.connect_button.setProperty("text", "Connect")
+            self.reset_button.setProperty("enabled", False)
+            self.reinitialize_button.setProperty("enabled", False)
+            self.record_button.setProperty("enabled", False)
             self.ports_widget.setEnabled(False)
             self.disable_velocity_plot()
             self.get_treadmills()
@@ -164,8 +191,17 @@ class Window(QWidget):
         else:
             self.treadmill.close_connection()
 
-    def print_treadmill_data(self, text):
-        self.treadmill_data_printer.setPlainText(text)
+    def record_button_action(self):
+        if self.treadmill.recording:
+            self.treadmill.write_data("r")
+        else:
+            self.treadmill.write_data("R")
+
+    def update_record_button(self, recording_state):
+        if recording_state:
+            self.record_button.setText("🔴 REC")
+        else:
+            self.record_button.setText("Record")
 
     def print_to_console(self, text):
         self.main_console.appendPlainText(text)
