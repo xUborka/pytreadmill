@@ -78,8 +78,9 @@ class Treadmill(QObject):
 
     def read_data(self):
         try:
-            serial_input = self.serial_object.readline()
-            serial_input = serial_input.decode(encoding='ascii')
+            raw_serial_input = self.serial_object.read_until(b'>')
+            serial_input = raw_serial_input.decode(encoding='ascii')
+            serial_input = serial_input[:-1]
             serial_input = serial_input.rstrip()
             self.treadmill_data = TreadmillData(*serial_input.split(" "))
         except serial.SerialException as exc:
