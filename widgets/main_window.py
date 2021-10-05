@@ -175,6 +175,8 @@ class Window(QWidget):
         else:
             self.print_to_console("Serial connection terminated.\n")
             self.read_thread.running = False
+            for port_data in self.port_list:
+                port_data.port.groupbox_position_trigger.setChecked(False)
             self.connect_button.setProperty("text", "Connect")
             self.reset_button.setProperty("enabled", False)
             self.reinitialize_button.setProperty("enabled", False)

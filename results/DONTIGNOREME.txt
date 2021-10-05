@@ -1,0 +1,1 @@
+brick file for avoiding deletion of \results directory by git
