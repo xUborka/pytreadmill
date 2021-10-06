@@ -15,7 +15,8 @@ class PortWidget(QWidget):
         self.read_thread = read_thread
         self.port_data = PortData(self)
 
-        self.clicked = False
+        self.writing = False
+        self.writing_delay_count = 0
 
         # create worker thread
         self.worker = PositionTriggerWorker(self.port_data)
@@ -109,6 +110,7 @@ class PortWidget(QWidget):
             self.pulse_button.setDisabled(False)
 
     def port_switch_action(self):
+        self.writing = True
         if self.port_data.is_port_active:
             self.pulse_timer.stop()
             self.treadmill.write_data(self.name.lower())
@@ -118,6 +120,7 @@ class PortWidget(QWidget):
             self.treadmill.write_data(self.name)
             self.port_data.is_port_active = True
             self.update_switch_button_visual()
+        self.writing = False
 
     def pulse_signal_action(self):
         self.pulse_timer.start(self.edit_trigger_duration.value())
