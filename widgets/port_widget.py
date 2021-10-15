@@ -16,7 +16,10 @@ class PortWidget(QWidget):
         self.port_data = PortData(self)
 
         self.writing = False
-        self.writing_delay_count = 0
+        self.writing_timer = QTimer(self)
+        self.writing_timer.setInterval(50)
+        self.writing_timer.setSingleShot(True)
+        self.writing_timer.timeout.connect(self.writing_off)
 
         # create worker thread
         self.worker = PositionTriggerWorker(self.port_data)
@@ -98,8 +101,10 @@ class PortWidget(QWidget):
         PortWidget.init_single_spinbox(self.edit_trigger_retention, 50, 10000, 3000, 500)
         self.set_button_action()
 
+    def writing_off(self):
+        self.writing = False
+
     def update_switch_button_visual(self):
-        print("changing visuals")
         if self.port_data.is_port_active:
             self.switch_button.setText("ON")
             self.switch_button.setStyleSheet("color: white; background-color: green;")
@@ -111,6 +116,7 @@ class PortWidget(QWidget):
 
     def port_switch_action(self):
         self.writing = True
+        self.writing_timer.start()
         if self.port_data.is_port_active:
             self.pulse_timer.stop()
             self.treadmill.write_data(self.name.lower())
@@ -120,7 +126,6 @@ class PortWidget(QWidget):
             self.treadmill.write_data(self.name)
             self.port_data.is_port_active = True
             self.update_switch_button_visual()
-        self.writing = False
 
     def pulse_signal_action(self):
         self.pulse_timer.start(self.edit_trigger_duration.value())

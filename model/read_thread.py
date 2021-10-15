@@ -57,9 +57,6 @@ class ReadThreadWorker(QObject):
         self.sampling_timer.timeout.connect(self.read_treadmill_data)
 
         self.treadmill.record_signal.connect(self.recording_switch)
-        # self.terminate_sig.connect(self.terminate)
-        # self.start_timer_sig.connect(self.start_timer)
-        # self.stop_timer_sig.connect(self.stop_timer)
 
     def process(self):
         self.running = True
@@ -81,15 +78,12 @@ class ReadThreadWorker(QObject):
             self.treadmill_data_list.append(self.treadmill_data)
 
     def check_port_states(self):
-        # print(self.port_list[0].is_port_active, self.treadmill_data.port_states[0])
         for port_list_instance, port_state in zip(self.port_list, self.treadmill_data.port_states):
-            if not port_list_instance.port.groupbox_position_trigger.isChecked():
-                if port_list_instance.is_port_active != port_state:
-                    print("\n\n\nMISSMATCH on port ", port_list_instance.port.name,
-                        ", writing=", port_list_instance.port.writing,
-                        port_list_instance.is_port_active, port_state, "\n\n\n")
-                    port_list_instance.is_port_active = bool(port_state)
-                    port_list_instance.port.update_switch_button_visual()
+            if not port_list_instance.port.writing:
+                if not port_list_instance.port.groupbox_position_trigger.isChecked():
+                    if port_list_instance.is_port_active != port_state:
+                        port_list_instance.is_port_active = bool(port_state)
+                        port_list_instance.port.update_switch_button_visual()
 
 
     def recording_switch(self, is_recording):
