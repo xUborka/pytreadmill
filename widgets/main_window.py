@@ -6,7 +6,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
 from model.treadmill_handler import Treadmill
-from model.read_thread import ReadThreadWorker
+from model.read_thread import ReadThread
 from model.gtools import GTools
 from widgets.plot_widget import PlotWidget
 from widgets.port_group_widget import PortGroupWidget
@@ -25,13 +25,8 @@ class Window(QWidget):
         self.treadmill.record_signal.connect(self.update_record_button)
 
         # Read thread
-        self.reader = ReadThreadWorker(self.treadmill)
-        self.reader.message_signal.connect(self.print_to_console)
-
-        self.read_thread = QThread(self)
-        self.reader.moveToThread(self.read_thread)
-        self.read_thread.started.connect(self.reader.process)
-        self.reader.finished.connect(self.read_thread.quit)
+        self.read_thread = ReadThread(self.treadmill)
+        self.read_thread.worker.message_sig.connect(self.print_to_console)
 
         # List for storing connected treadmills
         self.treadmill_list = list()
@@ -137,23 +132,23 @@ class Window(QWidget):
             pass
 
     def check_connection_requirement(self):
-        if len(self.treadmill_list) == 0 or self.reader.save_folder is None:
+        if len(self.treadmill_list) == 0 or self.read_thread.worker.save_folder is None:
             self.connect_button.setProperty("enabled", False)
         else:
             self.connect_button.setProperty("enabled", True)
 
     def init_folder(self):
-        self.reader.save_folder = GTools.get_save_folder()
-        self.print_to_console(f"Save folder set to: {self.reader.save_folder} \n")
+        self.read_thread.worker.save_folder = GTools.get_save_folder()
+        self.print_to_console(f"Save folder set to: {self.read_thread.worker.save_folder} \n")
 
     def select_folder(self):
-        self.reader.save_folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        self.read_thread.worker.save_folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
-        if os.path.isdir(self.reader.save_folder):
-            GTools.update_save_folder(self.reader.save_folder)
-            self.print_to_console(f"Save folder set to: {self.reader.save_folder} \n")
+        if os.path.isdir(self.read_thread.worker.save_folder):
+            GTools.update_save_folder(self.read_thread.worker.save_folder)
+            self.print_to_console(f"Save folder set to: {self.read_thread.worker.save_folder} \n")
         else:
-            self.reader.save_folder = None
+            self.read_thread.worker.save_folder = None
             self.print_to_console("No valid save folder was set.\n")
 
         self.check_connection_requirement()
@@ -171,13 +166,13 @@ class Window(QWidget):
             self.reset_button.setProperty("enabled", True)
             self.reinitialize_button.setProperty("enabled", True)
             self.record_button.setProperty("enabled", True)
-            self.reader.port_list = self.port_list
+            self.read_thread.worker.port_list = self.port_list
             self.ports_widget.setEnabled(True)
             self.read_thread.start()
             self.enable_velocity_plot()
         else:
             self.print_to_console("Serial connection terminated.\n")
-            self.reader.terminate_sig.emit() #maybe I should check if the thread is active and only call terminate if it is so
+            self.read_thread.stop() #maybe I should check if the thread is active and only call terminate if it is so
             for port_data in self.port_list:
                 port_data.port.groupbox_position_trigger.setChecked(False)
             self.connect_button.setProperty("text", "Connect")
@@ -189,7 +184,7 @@ class Window(QWidget):
             self.get_treadmills()
 
     def connect_button_action(self):
-        if not self.reader.running:
+        if not self.read_thread.worker.running:
             self.print_to_console("Connecting to treadmill on port " +
                                self.treadmill_list_dropdown.currentData(0) + ".")
             self.treadmill.connect(self.treadmill_list_dropdown.currentData(0))
@@ -220,7 +215,7 @@ class Window(QWidget):
         self.plot_widget.disable()
 
     def update_plot(self):
-        self.plot_widget.update_plot(self.reader.treadmill_data, self.treadmill.recording)
+        self.plot_widget.update_plot(self.read_thread.worker.treadmill_data, self.treadmill.recording)
 
     def change_plot_color(self):
         self.plot_widget.update_color(self.treadmill)
