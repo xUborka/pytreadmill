@@ -17,7 +17,7 @@ class PortWidget(QWidget):
 
         self.writing = False
         self.writing_timer = QTimer(self)
-        self.writing_timer.setInterval(50)
+        self.writing_timer.setInterval(500)
         self.writing_timer.setSingleShot(True)
         self.writing_timer.timeout.connect(self.writing_off)
 
@@ -128,6 +128,7 @@ class PortWidget(QWidget):
             self.update_switch_button_visual()
 
     def pulse_signal_action(self):
+        self.port_switch_action()
         self.pulse_timer.start(self.edit_trigger_duration.value())
 
     def pulse_repetition_button_action(self, checked):
