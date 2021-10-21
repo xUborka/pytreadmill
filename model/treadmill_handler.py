@@ -27,7 +27,6 @@ class Treadmill(QObject):
 
     @staticmethod
     def find_treadmills():
-        print([p.device for p in serial.tools.list_ports.comports()])
         ardunio_ports = [
             p.device
             for p in serial.tools.list_ports.comports()

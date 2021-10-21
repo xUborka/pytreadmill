@@ -3,15 +3,6 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 from model.gtools import GTools
 from interfaces.treadmill_data import TreadmillData
 
-'''
-class Reader:
-    def __init__(self, treadmill):
-        self.worker = ReadThreadWorker(treadmill)
-        self.message_sig = self.worker.message_sig
-        self.start_timer_sig
-        pass
-'''
-
 class Signals(QObject):
     message_sig = pyqtSignal(str)
     start_timer_sig = pyqtSignal()

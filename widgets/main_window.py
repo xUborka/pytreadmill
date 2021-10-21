@@ -172,7 +172,8 @@ class Window(QWidget):
             self.enable_velocity_plot()
         else:
             self.print_to_console("Serial connection terminated.\n")
-            self.read_thread.stop() #maybe I should check if the thread is active and only call terminate if it is so
+            if self.read_thread.isRunning():
+                self.read_thread.stop()
             for port_data in self.port_list:
                 port_data.port.groupbox_position_trigger.setChecked(False)
             self.connect_button.setProperty("text", "Connect")
@@ -189,6 +190,7 @@ class Window(QWidget):
                                self.treadmill_list_dropdown.currentData(0) + ".")
             self.treadmill.connect(self.treadmill_list_dropdown.currentData(0))
         else:
+            self.read_thread.stop()
             self.treadmill.close_connection()
 
     def record_button_action(self):

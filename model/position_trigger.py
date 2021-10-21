@@ -43,7 +43,7 @@ class PositionTriggerWorker(QObject):
         self.trigger_timer.setInterval(self.port_data.retention)
 
     def check_position(self):
-        treadmill_data = self.read_thread.treadmill_data
+        treadmill_data = self.read_thread.worker.treadmill_data
         if not self.is_recording and treadmill_data.recording:
             self.is_recording = True
 
