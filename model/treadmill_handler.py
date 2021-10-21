@@ -27,7 +27,6 @@ class Treadmill(QObject):
 
     @staticmethod
     def find_treadmills():
-        print([p.device for p in serial.tools.list_ports.comports()])
         ardunio_ports = [
             p.device
             for p in serial.tools.list_ports.comports()
@@ -73,7 +72,7 @@ class Treadmill(QObject):
         if self.treadmill_data.recording != self.recording:
             if self.treadmill_data.recording == 1:
                 self.record_signal.emit(True)
-            else:
+            elif self.treadmill_data.recording == 0:
                 self.record_signal.emit(False)
 
     def read_data(self):

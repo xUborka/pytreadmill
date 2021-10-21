@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QWidget, QPushButton, QLineEdit, QLabel,\
     QSpinBox, QGroupBox
 from model.position_trigger import PositionTriggerWorker
-from interfaces.position_trigger_data import PositionTriggerData
+from interfaces.port_data import PortData
 
 
 class PortWidget(QWidget):
@@ -13,12 +13,16 @@ class PortWidget(QWidget):
         self.name = name
         self.treadmill = treadmill
         self.read_thread = read_thread
-        self.position_trigger_data = PositionTriggerData(self)
+        self.port_data = PortData(self)
 
-        self.clicked = True
+        self.writing = False
+        self.writing_timer = QTimer(self)
+        self.writing_timer.setInterval(500)
+        self.writing_timer.setSingleShot(True)
+        self.writing_timer.timeout.connect(self.writing_off)
 
         # create worker thread
-        self.worker = PositionTriggerWorker(self.position_trigger_data)
+        self.worker = PositionTriggerWorker(self.port_data)
         self.worker.triggerSignal.connect(self.pulse_signal_action)
         self.position_trigger_changed_signal.connect(self.worker.update_trigger_interval)
 
@@ -41,9 +45,9 @@ class PortWidget(QWidget):
         self.set_ui_elements()
 
         # update and send data about port instance to main thread
-        self.get_position_trigger_data()
+        self.get_port_data()
         self.init_spinbox()
-        port_list.append(self.position_trigger_data)
+        port_list.append(self.port_data)
 
     def set_ui_elements(self):
         self.edit_label.setPlaceholderText("port " + self.name)
@@ -65,17 +69,17 @@ class PortWidget(QWidget):
         self.edit_trigger_position.setAlignment(Qt.AlignRight)
         self.edit_trigger_position.setSuffix(" ‰")
         self.edit_trigger_position.valueChanged.connect(
-            lambda: self.value_changed(self.edit_trigger_position, self.position_trigger_data.start))
+            lambda: self.value_changed(self.edit_trigger_position, self.port_data.start))
 
         self.edit_trigger_window.setAlignment(Qt.AlignRight)
         self.edit_trigger_window.setSuffix(" ‰")
         self.edit_trigger_window.valueChanged.connect(
-            lambda: self.value_changed(self.edit_trigger_window, self.position_trigger_data.window))
+            lambda: self.value_changed(self.edit_trigger_window, self.port_data.window))
 
         self.edit_trigger_retention.setAlignment(Qt.AlignRight)
         self.edit_trigger_retention.setSuffix(" ms")
         self.edit_trigger_retention.valueChanged.connect(
-            lambda: self.value_changed(self.edit_trigger_retention, self.position_trigger_data.retention))
+            lambda: self.value_changed(self.edit_trigger_retention, self.port_data.retention))
 
         self.set_button.clicked.connect(self.set_button_action)
         self.restore_button.clicked.connect(self.restore_button_action)
@@ -97,22 +101,34 @@ class PortWidget(QWidget):
         PortWidget.init_single_spinbox(self.edit_trigger_retention, 50, 10000, 3000, 500)
         self.set_button_action()
 
-    def port_switch_action(self):
-        if self.clicked:
+    def writing_off(self):
+        self.writing = False
+
+    def update_switch_button_visual(self):
+        if self.port_data.is_port_active:
             self.switch_button.setText("ON")
             self.switch_button.setStyleSheet("color: white; background-color: green;")
             self.pulse_button.setDisabled(True)
-            self.treadmill.write_data(self.name)
-            self.clicked = False
         else:
             self.switch_button.setText("OFF")
             self.switch_button.setStyleSheet("color: white; background-color: red;")
             self.pulse_button.setDisabled(False)
+
+    def port_switch_action(self):
+        self.writing = True
+        self.writing_timer.start()
+        if self.port_data.is_port_active:
             self.pulse_timer.stop()
             self.treadmill.write_data(self.name.lower())
-            self.clicked = True
+            self.port_data.is_port_active = False
+            self.update_switch_button_visual()
+        else:
+            self.treadmill.write_data(self.name)
+            self.port_data.is_port_active = True
+            self.update_switch_button_visual()
 
     def pulse_signal_action(self):
+        self.port_switch_action()
         self.pulse_timer.start(self.edit_trigger_duration.value())
 
     def pulse_repetition_button_action(self, checked):
@@ -130,29 +146,29 @@ class PortWidget(QWidget):
             spin_box.setStyleSheet("background-color: white;")
 
     def get_pulse_duration(self):
-        self.position_trigger_data.duration = self.edit_trigger_duration.value()
+        self.port_data.duration = self.edit_trigger_duration.value()
 
-    def get_position_trigger_data(self):
-        self.position_trigger_data.start = self.edit_trigger_position.value()
-        self.position_trigger_data.window = self.edit_trigger_window.value()
-        self.position_trigger_data.retention = self.edit_trigger_retention.value()
+    def get_port_data(self):
+        self.port_data.start = self.edit_trigger_position.value()
+        self.port_data.window = self.edit_trigger_window.value()
+        self.port_data.retention = self.edit_trigger_retention.value()
         self.get_pulse_duration()
 
     def set_button_action(self):
-        self.get_position_trigger_data()
-        self.value_changed(self.edit_trigger_position, self.position_trigger_data.start)
-        self.value_changed(self.edit_trigger_window, self.position_trigger_data.window)
-        self.value_changed(self.edit_trigger_retention, self.position_trigger_data.retention)
+        self.get_port_data()
+        self.value_changed(self.edit_trigger_position, self.port_data.start)
+        self.value_changed(self.edit_trigger_window, self.port_data.window)
+        self.value_changed(self.edit_trigger_retention, self.port_data.retention)
 
-        self.position_trigger_changed_signal.emit(self.position_trigger_data)
+        self.position_trigger_changed_signal.emit(self.port_data)
 
     def restore_button_action(self):
-        self.edit_trigger_position.setValue(self.position_trigger_data.start)
-        self.edit_trigger_window.setValue(self.position_trigger_data.window)
-        self.edit_trigger_retention.setValue(self.position_trigger_data.retention)
+        self.edit_trigger_position.setValue(self.port_data.start)
+        self.edit_trigger_window.setValue(self.port_data.window)
+        self.edit_trigger_retention.setValue(self.port_data.retention)
 
     def groupbox_toggle_action(self, is_toggled):
-        self.position_trigger_data.is_active = is_toggled
+        self.port_data.is_trigger_active = is_toggled
         if is_toggled:
             self.enable_children_widgets(self.groupbox_position_trigger)
             self.worker.process()
