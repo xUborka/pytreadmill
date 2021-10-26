@@ -9,6 +9,7 @@ class Treadmill(QObject):
     connection_signal = pyqtSignal(bool)
     init_signal = pyqtSignal(bool)
     record_signal = pyqtSignal(bool)
+    ls_alarm_signal = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -16,6 +17,7 @@ class Treadmill(QObject):
         self.connected = False
         self.initialized = False
         self.recording = False
+        self.lap_sensor_alarm = False
 
         self.treadmill_data = TreadmillData()
 
@@ -62,18 +64,21 @@ class Treadmill(QObject):
     def set_recording_state(self, state: bool):
         self.recording = state
 
+    def set_ls_alarm_state(self, state: bool):
+        self.lap_sensor_alarm = state
+
     def update_treadmill_state(self):
         if self.treadmill_data.initialized != self.initialized:
-            if self.treadmill_data.initialized == 1:
-                self.init_signal.emit(True)
-            else:
-                self.init_signal.emit(False)
+            self.init_signal.emit(bool(self.treadmill_data.initialized))
 
         if self.treadmill_data.recording != self.recording:
             if self.treadmill_data.recording == 1:
                 self.record_signal.emit(True)
             elif self.treadmill_data.recording == 0:
                 self.record_signal.emit(False)
+
+        if self.treadmill_data.lap_sensor_alarm != self.lap_sensor_alarm:
+            self.ls_alarm_signal.emit(bool(self.treadmill_data.lap_sensor_alarm))
 
     def read_data(self):
         try:

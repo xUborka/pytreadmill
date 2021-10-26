@@ -23,6 +23,7 @@ class Window(QWidget):
         self.treadmill.init_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.update_record_button)
+        self.treadmill.ls_alarm_signal.connect(self.ls_alarm_handler)
 
         # Read thread
         self.read_thread = ReadThread(self.treadmill)
@@ -221,6 +222,14 @@ class Window(QWidget):
 
     def change_plot_color(self):
         self.plot_widget.update_color(self.treadmill)
+
+    def ls_alarm_handler(self, alarm_state):
+        if alarm_state:
+            self.print_to_console("Warning! Missmatch between lap sensor signal and encoder null position." +
+            "Check Treadmill belt and reinitialize.\n")
+            self.reinitialize_button.setStyleSheet("color: white; background-color: red;")
+        else:
+            self.reinitialize_button.setStyleSheet("color: black; background-color: white;")
 
     def close_application(self):
         choice = QMessageBox.question(self, 'Message',
