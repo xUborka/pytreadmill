@@ -225,11 +225,13 @@ class Window(QWidget):
 
     def ls_alarm_handler(self, alarm_state):
         if alarm_state:
-            self.print_to_console("Warning! Missmatch between lap sensor signal and encoder null position." +
-            "Check Treadmill belt and reinitialize.\n")
+            self.print_to_console("Warning! Missmatch between lap sensor signal and encoder null position. " +
+                "Check Treadmill belt and reinitialize.\n")
             self.reinitialize_button.setStyleSheet("color: white; background-color: red;")
         else:
-            self.reinitialize_button.setStyleSheet("color: black; background-color: white;")
+            self.print_to_console("Lap sensor alarm resolved. " + 
+                "Lap sensor signal and encoder null position are aligned again.\n")
+            self.reinitialize_button.setStyleSheet("")
 
     def close_application(self):
         choice = QMessageBox.question(self, 'Message',

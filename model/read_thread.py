@@ -54,7 +54,7 @@ class ReadThreadWorker(QObject):
         self.measurement_count = 0
         self.treadmill_data_list.clear()
         self.sampling_timer.start()
-        self.message_sig.emit("Waiting for trigger...")
+        self.message_sig.emit("Waiting for trigger...\n")
 
     def start_timer(self):
         self.sampling_timer.start()

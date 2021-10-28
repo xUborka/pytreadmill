@@ -26,6 +26,7 @@ class Treadmill(QObject):
         self.connection_signal.connect(self.set_connection_state)
         self.init_signal.connect(self.set_initialization_state)
         self.record_signal.connect(self.set_recording_state)
+        self.ls_alarm_signal.connect(self.set_ls_alarm_state)
 
     @staticmethod
     def find_treadmills():
