@@ -54,6 +54,7 @@ class PortWidget(QWidget):
 
         self.switch_button.setStyleSheet("color: white;" "background-color: red")
         self.switch_button.clicked.connect(self.port_switch_action)
+        self.pulse_timer.setSingleShot(True)
         self.pulse_timer.timeout.connect(self.port_switch_action)
 
         self.edit_trigger_duration.setAlignment(Qt.AlignRight)

@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, QThread, QTimer
 from PyQt5.QtGui import QIcon
@@ -34,8 +35,10 @@ class Window(QWidget):
         self.port_list = list()
 
         # Plot resources
-        self.plot_timer = QTimer(self)
-        self.plot_timer.timeout.connect(self.update_plot)
+        # self.plot_timer = QTimer(self)
+        # self.plot_timer.timeout.connect(self.update_plot)
+        # TEMPORARY
+        self.read_thread.worker.sampling_timer.timeout.connect(self.printTreadmillData)
 
         self.init_ui()
 
@@ -95,6 +98,13 @@ class Window(QWidget):
         # Plot
         self.plot_widget = PlotWidget()
 
+        # TEMPORARY Data Printer
+        self.treadmillDataPrinter = QPlainTextEdit()
+        self.treadmillDataPrinter.setObjectName("treadmillData")
+        self.treadmillDataPrinter.setProperty("readOnly", True)
+        self.treadmillDataPrinter.setOverwriteMode(True)
+        self.treadmillDataPrinter.setMaximumHeight(30)
+
         # Layouts
         level_one_layout = QHBoxLayout()
         level_one_layout.addWidget(self.browse_button)
@@ -114,13 +124,25 @@ class Window(QWidget):
         main_layout.addWidget(self.main_console)
         main_layout.addWidget(self.ports_widget)
         main_layout.addLayout(record_and_reset_layout)
-        main_layout.addWidget(self.plot_widget)
+        # main_layout.addWidget(self.plot_widget)
+        main_layout.addWidget(self.treadmillDataPrinter)
 
         self.setLayout(main_layout)
 
         # FINALIZE
         self.show()
         self.setMaximumWidth(self.width())
+
+    #TEMPORARY
+    def printTreadmillData(self):
+        text = (time.strftime("%M:%S", time.gmtime(int(self.treadmill.treadmill_data.time) / 1000)) +
+                "   |   v = " + str(self.treadmill.treadmill_data.velocity) +
+                "   |   abs. position = " + str(self.treadmill.treadmill_data.abs_position) +
+                "   |   lap = " + str(self.treadmill.treadmill_data.lap) +
+                "   |   rel. position = " + str(self.treadmill.treadmill_data.rel_position) + 
+                "   |   serial read time = {:.0f}".format(self.treadmill.diff_time) +
+                "   |   bytes in serial buffer = " + str(self.treadmill.serial_object.in_waiting))
+        self.treadmillDataPrinter.setPlainText(text)
 
     def open_dialog(self, question_object, callback):
         question_string = "Are you sure you want to {0}?".format(question_object)
@@ -211,10 +233,10 @@ class Window(QWidget):
 
     def enable_velocity_plot(self):
         self.plot_widget.enable()
-        self.plot_timer.start(5)
+        # self.plot_timer.start(5)
 
     def disable_velocity_plot(self):
-        self.plot_timer.stop()
+        # self.plot_timer.stop()
         self.plot_widget.disable()
 
     def update_plot(self):
