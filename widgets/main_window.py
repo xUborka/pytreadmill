@@ -25,6 +25,7 @@ class Window(QWidget):
         self.treadmill.record_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.update_record_button)
         self.treadmill.ls_alarm_signal.connect(self.ls_alarm_handler)
+        # self.treadmill.data_read_signal.connect(self.update_plot)
 
         # Read thread
         self.read_thread = ReadThread(self.treadmill)
@@ -35,10 +36,12 @@ class Window(QWidget):
         self.port_list = list()
 
         # Plot resources
-        # self.plot_timer = QTimer(self)
-        # self.plot_timer.timeout.connect(self.update_plot)
+        # # self.plot_timer = QTimer(self)
+        # # self.plot_timer.timeout.connect(self.update_plot)
+        
         # TEMPORARY
-        self.read_thread.worker.sampling_timer.timeout.connect(self.printTreadmillData)
+        # self.read_thread.worker.sampling_timer.timeout.connect(self.printTreadmillData)
+        self.treadmill.data_read_signal.connect(self.printTreadmillData)
 
         self.init_ui()
 

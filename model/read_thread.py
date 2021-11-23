@@ -48,6 +48,8 @@ class ReadThreadWorker(QObject):
         self.sampling_timer.timeout.connect(self.read_treadmill_data)
 
         self.treadmill.record_signal.connect(self.recording_switch)
+        self.treadmill.data_read_signal.connect(self.update_self_treadmill_data)
+        self.treadmill.data_read_signal.connect(self.record_treadmill_data)
 
     def process(self):
         self.running = True
@@ -63,10 +65,15 @@ class ReadThreadWorker(QObject):
         self.sampling_timer.stop()
 
     def read_treadmill_data(self):
-        self.treadmill_data = self.treadmill.read_data()
+        self.treadmill.read_data()
         self.check_port_states()
+
+    def update_self_treadmill_data(self, data):
+        self.treadmill_data = data
+
+    def record_treadmill_data(self, data):
         if self.recording:
-            self.treadmill_data_list.append(self.treadmill_data)
+            self.treadmill_data_list.append(data)
 
     def check_port_states(self):
         # print(self.port_list[0].is_port_active, self.treadmill_data.port_states[0])

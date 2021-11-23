@@ -12,6 +12,7 @@ class Treadmill(QObject):
     init_signal = pyqtSignal(bool)
     record_signal = pyqtSignal(bool)
     ls_alarm_signal = pyqtSignal(bool)
+    data_read_signal = pyqtSignal(TreadmillData)
 
     def __init__(self):
         super().__init__()
@@ -97,24 +98,24 @@ class Treadmill(QObject):
         self.treadmill_data = TreadmillData(*serial_input.split(" "))
 
     def read_data(self):
-        try:
-            while self.serial_object.in_waiting > 2:
+        while self.serial_object.in_waiting > 2:
+            try:
                 self.allocate_serial_data()
-        except serial.SerialException as exc:
-            GTools.error_message("Treadmill unplugged", exc)
-            self.connection_signal.emit(False)
-            self.treadmill_data.invalidate()
-        except (ValueError, UnicodeDecodeError) as exc:
-            GTools.error_message("Serial communication error", exc)
-            self.treadmill_data.invalidate()
-        except Exception as exc:
-            GTools.error_message("Unknown error during reading serial data", exc)
-            self.treadmill_data.invalidate()
-        self.update_treadmill_state()
+            except serial.SerialException as exc:
+                GTools.error_message("Treadmill unplugged", exc)
+                self.connection_signal.emit(False)
+                self.treadmill_data.invalidate()
+            except (ValueError, UnicodeDecodeError) as exc:
+                GTools.error_message("Serial communication error", exc)
+                self.treadmill_data.invalidate()
+            except Exception as exc:
+                GTools.error_message("Unknown error during reading serial data", exc)
+                self.treadmill_data.invalidate()
 
-        self.update_cycle_time()
-        
-        return self.treadmill_data
+            self.update_treadmill_state()
+            self.data_read_signal.emit(self.treadmill_data)
+
+            self.update_cycle_time()
 
     def write_data(self, data):
         self.serial_object.write(bytes(data, 'ascii'))
