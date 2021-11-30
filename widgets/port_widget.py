@@ -96,7 +96,7 @@ class PortWidget(QWidget):
         widget.setSingleStep(step)
 
     def init_spinbox(self):
-        PortWidget.init_single_spinbox(self.edit_trigger_duration, 100, 5000, 100, 100)
+        PortWidget.init_single_spinbox(self.edit_trigger_duration, 20, 5000, 100, 50)
         PortWidget.init_single_spinbox(self.edit_trigger_position, 1, 1000, 500, 50)
         PortWidget.init_single_spinbox(self.edit_trigger_window, 0, 999, 100, 50)
         PortWidget.init_single_spinbox(self.edit_trigger_retention, 50, 10000, 3000, 500)
