@@ -4,7 +4,8 @@ class TreadmillData:
                  vel: int = 0, abs_pos: int = 0,
                  lap: int = 0, rel_pos: int = 0,
                  lick: int = 0, init: int = 0,
-                 port_states: list = [0, 0, 0]):
+                 port_states: list = [0, 0, 0],
+                 lap_sensor_alarm = 0):
         self.time = int(t)
         self.recording = int(rec)
         self.velocity = int(vel)
@@ -14,6 +15,7 @@ class TreadmillData:
         self.lick = int(lick)
         self.initialized = int(init)
         self.port_states = list(map(int, port_states))
+        self.lap_sensor_alarm = int(lap_sensor_alarm)
 
     def invalidate(self):
         self.time = 0
@@ -25,6 +27,7 @@ class TreadmillData:
         self.lick = 0
         self.initialized = 0
         self.port_states = [0, 0, 0]
+        self.lap_sensor_alarm = 0
 
     def __str__(self) -> str:
         return ', '.join(map(str, [self.time, self.velocity, self.abs_position, self.lap, self.rel_position, self.lick]))

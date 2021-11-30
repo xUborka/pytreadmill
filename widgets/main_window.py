@@ -1,7 +1,8 @@
 import sys
 import os
+import time
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QSize, QTimer
+from PyQt5.QtCore import QSize, QThread, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPushButton, QComboBox, QMessageBox, \
     QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
@@ -23,19 +24,19 @@ class Window(QWidget):
         self.treadmill.init_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.update_record_button)
+        self.treadmill.ls_alarm_signal.connect(self.ls_alarm_handler)
 
         # Read thread
         self.read_thread = ReadThread(self.treadmill)
-        self.read_thread.message_signal.connect(self.print_to_console)
-        self.read_thread.treadmill_state_changed.connect(self.change_plot_color)
-
-        # List for storing connected treadmills
-        self.treadmill_list = list()
-        self.port_list = list()
+        self.read_thread.worker.message_sig.connect(self.print_to_console)
 
         # Plot resources
         self.plot_timer = QTimer(self)
         self.plot_timer.timeout.connect(self.update_plot)
+
+        # List for storing connected treadmills
+        self.treadmill_list = list()
+        self.port_list = list()
 
         self.init_ui()
 
@@ -133,23 +134,23 @@ class Window(QWidget):
             pass
 
     def check_connection_requirement(self):
-        if len(self.treadmill_list) == 0 or self.read_thread.save_folder is None:
+        if len(self.treadmill_list) == 0 or self.read_thread.worker.save_folder is None:
             self.connect_button.setProperty("enabled", False)
         else:
             self.connect_button.setProperty("enabled", True)
 
     def init_folder(self):
-        self.read_thread.save_folder = GTools.get_save_folder()
-        self.print_to_console(f"Save folder set to: {self.read_thread.save_folder} \n")
+        self.read_thread.worker.save_folder = GTools.get_save_folder()
+        self.print_to_console(f"Save folder set to: {self.read_thread.worker.save_folder} \n")
 
     def select_folder(self):
-        self.read_thread.save_folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        self.read_thread.worker.save_folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
-        if os.path.isdir(self.read_thread.save_folder):
-            GTools.update_save_folder(self.read_thread.save_folder)
-            self.print_to_console(f"Save folder set to: {self.read_thread.save_folder} \n")
+        if os.path.isdir(self.read_thread.worker.save_folder):
+            GTools.update_save_folder(self.read_thread.worker.save_folder)
+            self.print_to_console(f"Save folder set to: {self.read_thread.worker.save_folder} \n")
         else:
-            self.read_thread.save_folder = None
+            self.read_thread.worker.save_folder = None
             self.print_to_console("No valid save folder was set.\n")
 
         self.check_connection_requirement()
@@ -163,18 +164,18 @@ class Window(QWidget):
     def treadmill_connection_handler(self, connected):
         if connected:
             self.print_to_console("Serial connection established.\n")
-            self.read_thread.running = True
             self.connect_button.setProperty("text", "Disconnect")
             self.reset_button.setProperty("enabled", True)
             self.reinitialize_button.setProperty("enabled", True)
             self.record_button.setProperty("enabled", True)
-            self.read_thread.port_list = self.port_list
+            self.read_thread.worker.port_list = self.port_list
             self.ports_widget.setEnabled(True)
             self.read_thread.start()
             self.enable_velocity_plot()
         else:
             self.print_to_console("Serial connection terminated.\n")
-            self.read_thread.running = False
+            if self.read_thread.isRunning():
+                self.read_thread.stop()
             for port_data in self.port_list:
                 port_data.port.groupbox_position_trigger.setChecked(False)
             self.connect_button.setProperty("text", "Connect")
@@ -186,11 +187,12 @@ class Window(QWidget):
             self.get_treadmills()
 
     def connect_button_action(self):
-        if not self.read_thread.running:
+        if not self.read_thread.worker.running:
             self.print_to_console("Connecting to treadmill on port " +
                                self.treadmill_list_dropdown.currentData(0) + ".")
             self.treadmill.connect(self.treadmill_list_dropdown.currentData(0))
         else:
+            self.read_thread.stop()
             self.treadmill.close_connection()
 
     def record_button_action(self):
@@ -217,10 +219,20 @@ class Window(QWidget):
         self.plot_widget.disable()
 
     def update_plot(self):
-        self.plot_widget.update_plot(self.read_thread.treadmill_data, self.treadmill.recording)
+        self.plot_widget.update_plot(self.treadmill.treadmill_data, self.treadmill.recording)
 
     def change_plot_color(self):
         self.plot_widget.update_color(self.treadmill)
+
+    def ls_alarm_handler(self, alarm_state):
+        if alarm_state:
+            self.print_to_console("Warning! Missmatch between lap sensor signal and encoder null position. " +
+                "Check Treadmill belt and reinitialize.\n")
+            self.reinitialize_button.setStyleSheet("color: white; background-color: red;")
+        else:
+            self.print_to_console("Lap sensor alarm resolved. " + 
+                "Lap sensor signal and encoder null position are aligned again.\n")
+            self.reinitialize_button.setStyleSheet("")
 
     def close_application(self):
         choice = QMessageBox.question(self, 'Message',
