@@ -98,7 +98,7 @@ class Treadmill(QObject):
         self.treadmill_data = TreadmillData(*serial_input.split(" "))
 
     def read_data(self):
-        while self.serial_object.in_waiting > 2:
+        while self.serial_object.isOpen() and self.serial_object.in_waiting > 2:
             try:
                 self.allocate_serial_data()
             except serial.SerialException as exc:
