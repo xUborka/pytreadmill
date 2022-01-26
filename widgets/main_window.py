@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, QThread, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPushButton, QComboBox, QMessageBox, \
-    QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout
+    QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout, QCheckBox
 from model.treadmill_handler import Treadmill
 from model.read_thread import ReadThread
 from model.gtools import GTools
@@ -24,6 +24,7 @@ class Window(QWidget):
         self.treadmill.init_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.change_plot_color)
         self.treadmill.record_signal.connect(self.update_record_button)
+        self.treadmill.record_signal.connect(self.record_video)
         self.treadmill.ls_alarm_signal.connect(self.ls_alarm_handler)
 
         # Read thread
@@ -76,6 +77,10 @@ class Window(QWidget):
         # Ports
         self.ports_widget = PortGroupWidget(self.port_list, self.read_thread, self.treadmill)
 
+        # Checkbox - Video recording
+        self.video_checkbox = QCheckBox("Capture video when recording", self)
+        self.video_checkbox.setProperty("enabled", False)
+
         # Button - Record button
         self.record_button = QPushButton('Record')
         self.record_button.clicked.connect(self.record_button_action)
@@ -104,11 +109,12 @@ class Window(QWidget):
         level_one_layout.addWidget(self.connect_button)
 
         record_and_reset_layout = QGridLayout()
-        for ndx in range(3):
-            record_and_reset_layout.addItem(QSpacerItem(110, 10), 0, ndx)
-        record_and_reset_layout.addWidget(self.reinitialize_button, 0, 3)
-        record_and_reset_layout.addWidget(self.reset_button, 0, 4)
-        record_and_reset_layout.addWidget(self.record_button, 0, 5)        
+        for ndx in range(2):
+            record_and_reset_layout.addItem(QSpacerItem(200, 10), 0, ndx)
+        record_and_reset_layout.addWidget(self.reinitialize_button, 0, 2)
+        record_and_reset_layout.addWidget(self.reset_button, 0, 3)
+        record_and_reset_layout.addWidget(self.record_button, 0, 4)
+        record_and_reset_layout.addWidget(self.video_checkbox, 0, 5)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(level_one_layout)
@@ -168,6 +174,7 @@ class Window(QWidget):
             self.reset_button.setProperty("enabled", True)
             self.reinitialize_button.setProperty("enabled", True)
             self.record_button.setProperty("enabled", True)
+            self.video_checkbox.setProperty("enabled", True)
             self.read_thread.worker.port_list = self.port_list
             self.ports_widget.setEnabled(True)
             self.read_thread.start()
@@ -182,6 +189,7 @@ class Window(QWidget):
             self.reset_button.setProperty("enabled", False)
             self.reinitialize_button.setProperty("enabled", False)
             self.record_button.setProperty("enabled", False)
+            self.video_checkbox.setProperty("enabled", False)
             self.ports_widget.setEnabled(False)
             self.disable_velocity_plot()
             self.get_treadmills()
@@ -223,6 +231,12 @@ class Window(QWidget):
 
     def change_plot_color(self):
         self.plot_widget.update_color(self.treadmill)
+
+    def record_video(self, recording_state):
+        self.video_checkbox.setEnabled(not recording_state)
+        if self.video_checkbox.isChecked:
+            """Implement video recording trigger here"""
+            pass
 
     def ls_alarm_handler(self, alarm_state):
         if alarm_state:
