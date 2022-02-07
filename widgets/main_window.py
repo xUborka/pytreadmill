@@ -77,14 +77,18 @@ class Window(QWidget):
         # Ports
         self.ports_widget = PortGroupWidget(self.port_list, self.read_thread, self.treadmill)
 
-        # Checkbox - Video recording
-        self.video_checkbox = QCheckBox("Capture video when recording", self)
-        self.video_checkbox.setProperty("enabled", False)
-
         # Button - Record button
         self.record_button = QPushButton('Record')
         self.record_button.clicked.connect(self.record_button_action)
         self.record_button.setProperty("enabled", False)
+        
+        # Checkbox - Video recording
+        self.video_checkbox = QCheckBox("Capture video when recording", self)
+        self.video_checkbox.setProperty("enabled", False)
+
+        # Button - Camera stream window
+        self.cam_stream_button = QPushButton("Show camera stream")
+        self.cam_stream_button.clicked.connect()
 
         # Button - Reset button
         self.reset_button = QPushButton("Reset")
