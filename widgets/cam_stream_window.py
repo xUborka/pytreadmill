@@ -12,14 +12,20 @@ from model.gtools import GTools
 from widgets.plot_widget import PlotWidget
 from widgets.port_group_widget import PortGroupWidget
 
+from model.basler_cam_handler import BaslerCameraControl
+import numpy as np
 
-class Window(QWidget):
-    def __init__(self):
+
+class CamStreamWindow(QWidget):
+    def __init__(self, cam_control: BaslerCameraControl):
         super().__init__()
 
-        self.title = "Camera Stream"
+        self.cam_control = cam_control
+        self.cam_control.handler.com.img_sig.connect(self.set_image)
 
+        self.title = "Camera Stream"
         self.setWindowTitle(self.title)
+
         self.stream = QLabel(self)
         self.stream_thread = QThread(self)
         self.stream_worker: QObject

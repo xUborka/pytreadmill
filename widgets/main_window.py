@@ -9,8 +9,10 @@ from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPus
 from model.treadmill_handler import Treadmill
 from model.read_thread import ReadThread
 from model.gtools import GTools
+from model.basler_cam_handler import BaslerCameraControl
 from widgets.plot_widget import PlotWidget
 from widgets.port_group_widget import PortGroupWidget
+from widgets.cam_stream_window import CamStreamWindow
 
 
 class Window(QWidget):
@@ -26,6 +28,8 @@ class Window(QWidget):
         self.treadmill.record_signal.connect(self.update_record_button)
         self.treadmill.record_signal.connect(self.record_video)
         self.treadmill.ls_alarm_signal.connect(self.ls_alarm_handler)
+
+        self.cam_control = BaslerCameraControl()
 
         # Read thread
         self.read_thread = ReadThread(self.treadmill)
@@ -81,14 +85,6 @@ class Window(QWidget):
         self.record_button = QPushButton('Record')
         self.record_button.clicked.connect(self.record_button_action)
         self.record_button.setProperty("enabled", False)
-        
-        # Checkbox - Video recording
-        self.video_checkbox = QCheckBox("Capture video when recording", self)
-        self.video_checkbox.setProperty("enabled", False)
-
-        # Button - Camera stream window
-        self.cam_stream_button = QPushButton("Show camera stream")
-        self.cam_stream_button.clicked.connect()
 
         # Button - Reset button
         self.reset_button = QPushButton("Reset")
@@ -102,6 +98,18 @@ class Window(QWidget):
             lambda: self.open_dialog("reinitialize", lambda: self.treadmill.write_data("i")))
         self.reinitialize_button.setProperty("enabled", False)
 
+        # Checkbox - Video recording
+        self.video_checkbox = QCheckBox("Capture video when recording", self)
+        #self.video_checkbox.setProperty("enabled", False)
+
+        # Button - Connect Camera
+        self.connect_cam_button = QPushButton("Connect camera")
+        self.connect_cam_button.clicked.connect(self.connect_camera_action)
+
+        # Button - Camera stream button
+        self.cam_stream_button = QPushButton("Show camera stream")
+        self.cam_stream_button.clicked.connect(self.open_cam_stream)
+
         # Plot
         self.plot_widget = PlotWidget()
 
@@ -113,18 +121,25 @@ class Window(QWidget):
         level_one_layout.addWidget(self.connect_button)
 
         record_and_reset_layout = QGridLayout()
-        for ndx in range(2):
+        for ndx in range(3):
             record_and_reset_layout.addItem(QSpacerItem(200, 10), 0, ndx)
-        record_and_reset_layout.addWidget(self.reinitialize_button, 0, 2)
-        record_and_reset_layout.addWidget(self.reset_button, 0, 3)
-        record_and_reset_layout.addWidget(self.record_button, 0, 4)
-        record_and_reset_layout.addWidget(self.video_checkbox, 0, 5)
+        record_and_reset_layout.addWidget(self.reinitialize_button, 0, 3)
+        record_and_reset_layout.addWidget(self.reset_button, 0, 4)
+        record_and_reset_layout.addWidget(self.record_button, 0, 5)
+
+        video_control_layout = QGridLayout()
+        for ndx in range(3):
+            video_control_layout.addItem(QSpacerItem(200, 10), 0, ndx)
+        video_control_layout.addWidget(self.connect_cam_button, 0, 3)
+        video_control_layout.addWidget(self.cam_stream_button, 0, 4)
+        video_control_layout.addWidget(self.video_checkbox, 0, 5)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(level_one_layout)
         main_layout.addWidget(self.main_console)
         main_layout.addWidget(self.ports_widget)
         main_layout.addLayout(record_and_reset_layout)
+        main_layout.addLayout(video_control_layout)
         main_layout.addWidget(self.plot_widget)
 
         self.setLayout(main_layout)
@@ -241,6 +256,21 @@ class Window(QWidget):
         if self.video_checkbox.isChecked:
             """Implement video recording trigger here"""
             pass
+
+    def connect_camera_action(self):
+        if self.cam_control.cam and self.cam_control.cam.IsOpen():
+            self.cam_control.close_cam()
+            if not self.cam_control.cam.IsOpen():
+                self.connect_cam_button.setText("Connect camera")
+        else:
+            self.cam_control.connect_first_cam()
+            if self.cam_control.cam.IsOpen():
+                self.connect_cam_button.setText("Disconnect camera")
+
+    def open_cam_stream(self):
+        self.cam_stream_window = CamStreamWindow(self.cam_control)
+        self.cam_control.start_grabbing()
+        self.cam_stream_window.show()
 
     def ls_alarm_handler(self, alarm_state):
         if alarm_state:
