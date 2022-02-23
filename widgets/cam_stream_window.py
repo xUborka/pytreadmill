@@ -30,6 +30,9 @@ class CamStreamWindow(QWidget):
         self.stream_thread = QThread(self)
         self.stream_worker: QObject
 
-    @pyqtSlot(QImage)
-    def set_image(self, image):
-        self.stream.setPixmap(QPixmap.fromImage(image))
+    # @pyqtSlot(QImage)
+    def set_image(self, image: np.ndarray):
+        img = QImage()
+        QImage.loadFromData(img, image)
+        self.stream.setPixmap(QPixmap.fromImage(img))
+        

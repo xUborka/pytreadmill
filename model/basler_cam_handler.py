@@ -1,3 +1,4 @@
+import os
 from tkinter import Image
 import pypylon.pylon as pypy
 import numpy as np
@@ -27,8 +28,14 @@ class ImageHandler(pypy.ImageEventHandler):
 
 class BaslerCameraControl():
     def __init__(self):
+        self.setup_emulated_cam()
+
         self.cam = pypy.InstantCamera(pypy.TlFactory.GetInstance().CreateFirstDevice())
         self.handler = ImageHandler(self.cam)
+
+    def setup_emulated_cam(self):
+        NUM_CAMERAS = 1
+        os.environ["PYLON_CAMEMU"] = f"{NUM_CAMERAS}"
 
     def __set_default_settings(self, cam):
         cam.UserSetSelector = "Default"
