@@ -260,12 +260,16 @@ class Window(QWidget):
     def connect_camera_action(self):
         if self.cam_control.cam and self.cam_control.cam.IsOpen():
             self.cam_control.close_cam()
-            if not self.cam_control.cam.IsOpen():
-                self.connect_cam_button.setText("Connect camera")
         else:
             self.cam_control.connect_first_cam()
-            if self.cam_control.cam.IsOpen():
-                self.connect_cam_button.setText("Disconnect camera")
+
+        self.connect_cam_button_appearence(self.cam_control.cam.IsOpen())
+
+    def connect_cam_button_appearence(self, is_cam_open: bool):
+        if is_cam_open:
+            self.connect_cam_button.setText("Disconnect camera")
+        else:
+            self.connect_cam_button.setText("Connect camera")
 
     def open_cam_stream(self):
         self.cam_stream_window = CamStreamWindow(self.cam_control)

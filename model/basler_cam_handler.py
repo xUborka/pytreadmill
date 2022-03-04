@@ -7,6 +7,7 @@ import traceback
 
 class Communicate(QObject):
     img_sig = pyqtSignal(np.ndarray) # or change it to whatever datatype/class the image will be
+    grabbing_sig = pyqtSignal(bool)
 
 class ImageHandler(pypy.ImageEventHandler):
     def __init__(self, cam):
@@ -26,14 +27,15 @@ class ImageHandler(pypy.ImageEventHandler):
         except Exception as e:
             traceback.print_exc()
 
-class BaslerCameraControl():
+class BaslerCameraControl(QObject):
     def __init__(self):
-        self.setup_emulated_cam()
+        # self.__setup_emulated_cam()
 
         self.cam = pypy.InstantCamera(pypy.TlFactory.GetInstance().CreateFirstDevice())
         self.handler = ImageHandler(self.cam)
+        self.com = Communicate()
 
-    def setup_emulated_cam(self):
+    def __setup_emulated_cam(self):
         NUM_CAMERAS = 1
         os.environ["PYLON_CAMEMU"] = f"{NUM_CAMERAS}"
 
@@ -66,8 +68,13 @@ class BaslerCameraControl():
 
     def start_grabbing(self):
         self.__set_handler()
-        self.cam.StartGrabbing(pypy.GrabStrategy_LatestImages, pypy.GrabLoop_ProvidedByInstantCamera)
+        if self.cam.IsOpen() and not self.cam.IsGrabbing():
+            self.cam.StartGrabbing(pypy.GrabStrategy_LatestImages, pypy.GrabLoop_ProvidedByInstantCamera)
+            if self.cam.IsGrabbing():
+                self.com.grabbing_sig.emit(True)
 
     def stop_grabbing(self):
         self.cam.StopGrabbing()
         self.__unset_handler()
+        if not self.cam.IsGrabbing():
+            self.com.grabbing_sig.emit(False)

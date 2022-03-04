@@ -2,3 +2,4 @@
 **/*.csv
 **/cfg.json
 **/launch.json
+res/cfg.json

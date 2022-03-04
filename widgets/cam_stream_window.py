@@ -1,7 +1,7 @@
 import sys
 import os
 import time
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt, QSize, QThread, QTimer, QObject, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPushButton, QComboBox, QMessageBox, \
@@ -35,6 +35,7 @@ class CamStreamWindow(QMainWindow):
 
         self.stream = QLabel(self)
         self.stream.setText("Label is here")
+        self.stream.setMinimumSize(1, 1)
 
         self.setCentralWidget(self.stream)
 
@@ -43,14 +44,16 @@ class CamStreamWindow(QMainWindow):
 
     @pyqtSlot(np.ndarray)
     def paint_event(self, image: np.ndarray):
-        print(image.shape)
-        print(self.geometry())
         img = QImage(image, image.shape[1], image.shape[0], QImage.Format_Grayscale8)
-        pixmap = QPixmap(img).scaled(400, 300, Qt.KeepAspectRatio)
+        pixmap = QPixmap(img).scaled(self.width(), self.height(), Qt.KeepAspectRatio)
         self.stream.setPixmap(pixmap)
 
         ### dummy testing
         # imarray = np.random.rand(1024,768,3) * 255
         # qimage = QImage(imarray, imarray.shape[1], imarray.shape[0], QImage.Format_RGB888)    
         # self.stream.setPixmap(QPixmap(qimage))
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.cam_control.stop_grabbing()
+        return super().closeEvent(a0)
         
