@@ -1,9 +1,13 @@
+from ast import Gt
 import os
 from tkinter import Image
 import pypylon.pylon as pypy
 import numpy as np
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QThread
 import traceback
+import imageio as iio
+import time
+from model.gtools import GTools
 
 class Communicate(QObject):
     img_sig = pyqtSignal(np.ndarray) # or change it to whatever datatype/class the image will be
@@ -14,6 +18,7 @@ class ImageHandler(pypy.ImageEventHandler):
         super().__init__()
         # self.img = np.zeros((cam.Height.Value, cam.Width.Value), dtype=np.uint16) # maybe unnecessary
         self.com = Communicate()
+        self.last_time = time.time()
         
     def OnImageGrabbed(self, camera, grabResult):
         try:
@@ -22,6 +27,10 @@ class ImageHandler(pypy.ImageEventHandler):
                 self.com.img_sig.emit(self.img)
                 # the above two lines can be merged into one if unsuccesful grabbing doesn't need handling for the output
                 # self.com.img_sig.emit(grabResult.Array)
+
+                fps = 1 / (time.time() - self.last_time)
+                self.last_time = time.time()
+                # print("fps: %.2f" % fps)
             else:
                 raise RuntimeError("Grab Failed")
         except Exception as e:
@@ -29,11 +38,15 @@ class ImageHandler(pypy.ImageEventHandler):
 
 class BaslerCameraControl(QObject):
     def __init__(self):
-        # self.__setup_emulated_cam()
-
+        self.__setup_emulated_cam()
         self.cam = pypy.InstantCamera(pypy.TlFactory.GetInstance().CreateFirstDevice())
         self.handler = ImageHandler(self.cam)
         self.com = Communicate()
+
+        self.vid_write_thread = VideoWriteThread(fps=30)
+        self.vid_write_thread.start()
+        self.handler.com.img_sig.connect(self.vid_write_thread.writer.write)
+        self.com.grabbing_sig.connect(self.vid_write_thread.writer.external_stop)
 
     def __setup_emulated_cam(self):
         NUM_CAMERAS = 1
@@ -72,9 +85,76 @@ class BaslerCameraControl(QObject):
             self.cam.StartGrabbing(pypy.GrabStrategy_LatestImages, pypy.GrabLoop_ProvidedByInstantCamera)
             if self.cam.IsGrabbing():
                 self.com.grabbing_sig.emit(True)
+        
+        self.vid_write_thread.writer.start_writing()
 
     def stop_grabbing(self):
         self.cam.StopGrabbing()
         self.__unset_handler()
         if not self.cam.IsGrabbing():
             self.com.grabbing_sig.emit(False)
+            print("camera grabbing: " + str(self.cam.IsGrabbing()))
+
+class VideoWriter(QObject):
+    finished = pyqtSignal()
+
+    def __init__(self, fps=30) -> None:
+        super().__init__()
+        self.concrete_writer: iio.core.format.Writer = None
+        self.fps: int = fps
+        self.is_writing = False
+        self.last_rec_time = self.__millisecs()
+
+    def set_writer(self, vid_path: str=None):
+        if vid_path == None:
+            save_folder = GTools.get_save_folder()
+            start_date = time.strftime("%Y-%m-%d %H_%M_%S")
+            vid_path = save_folder + '/' + start_date
+
+        self.concrete_writer = self.__get_mp4_writer(vid_path)
+
+    def start_writing(self):
+        if self.concrete_writer == None:
+            self.set_writer()
+        self.is_writing = True
+        print("start writing")
+    
+    def write(self, img):
+        if self.is_writing and self.__max_fps_ok():
+            self.last_rec_time = self.__millisecs()
+            self.concrete_writer.append_data(img)
+
+    def stop_writing(self):
+        if self.is_writing:
+            self.concrete_writer.close()
+            print("Video writing finished.")
+            self.finished.emit()
+
+    def external_stop(self, is_grabbing):
+        if not is_grabbing:
+            # print("I want to stop and bool is: " + str(is_grabbing))
+            self.stop_writing()
+
+    def __millisecs(self) -> int:
+        return int(time.time() * 1000)
+
+    def __max_fps_ok(self) -> bool:
+        return ((self.__millisecs() - self.last_rec_time) > (1 / self.fps))
+
+    def __get_mp4_writer(self, vid_path: str):
+        fname = str(vid_path + ".mp4")
+        return iio.get_writer(fname, format='FFMPEG', fps=self.fps, codec='libx264', quality=4) # mode='I'
+
+class VideoWriteThread(QThread):
+    terminate_sig = pyqtSignal()
+
+    def __init__(self, fps=30, parent=None):
+        super().__init__(parent=parent)
+        self.writer = VideoWriter(fps)
+        self.writer.moveToThread(self)
+        self.started.connect(self.writer.set_writer)
+        self.writer.finished.connect(self.quit)
+        self.terminate_sig.connect(self.writer.stop_writing)
+        
+    def stop(self):
+        self.terminate_sig.emit()

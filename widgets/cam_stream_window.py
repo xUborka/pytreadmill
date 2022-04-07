@@ -1,24 +1,10 @@
-import sys
-import os
-import time
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtCore import Qt, QSize, QThread, QTimer, QObject, pyqtSlot
+from PyQt5 import QtGui
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QGridLayout, QSizePolicy, QSpacerItem, QWidget, QPushButton, QComboBox, QMessageBox, \
-    QPlainTextEdit, QFileDialog, QHBoxLayout, QVBoxLayout, QCheckBox, QLabel, QMainWindow
-from model.treadmill_handler import Treadmill
-from model.read_thread import ReadThread
-from model.gtools import GTools
-from widgets.plot_widget import PlotWidget
-from widgets.port_group_widget import PortGroupWidget
+from PyQt5.QtWidgets import QLabel, QMainWindow
 
 from model.basler_cam_handler import BaslerCameraControl
 import numpy as np
-
-# import matplotlib
-# matplotlib.use("Qt5Agg")
-# import matplotlib.pyplot as plt
-
 
 class CamStreamWindow(QMainWindow):
     def __init__(self, cam_control: BaslerCameraControl):
@@ -26,8 +12,6 @@ class CamStreamWindow(QMainWindow):
 
         self.cam_control = cam_control
         self.cam_control.handler.com.img_sig.connect(self.paint_event)
-
-        # todo: add close event to stop grabbing
 
         self.title = "Camera Stream"
         self.setWindowTitle(self.title)
