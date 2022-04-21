@@ -12,6 +12,9 @@ from model.gtools import GTools
 class Communicate(QObject):
     img_sig = pyqtSignal(np.ndarray) # or change it to whatever datatype/class the image will be
     grabbing_sig = pyqtSignal(bool)
+    enable_vid_rec_sig = pyqtSignal(bool)
+    rec_vid_sig = pyqtSignal(bool)
+
 
 class ImageHandler(pypy.ImageEventHandler):
     def __init__(self, cam):
@@ -45,12 +48,22 @@ class BaslerCameraControl(QObject):
 
         self.vid_write_thread = VideoWriteThread(fps=30)
         self.vid_write_thread.start()
-        self.handler.com.img_sig.connect(self.vid_write_thread.writer.write)
         self.com.grabbing_sig.connect(self.vid_write_thread.writer.external_stop)
+        # talán a következő sorokra kell implementálni a rec_vid_sig-hez a videó indítását
 
+        self.com.rec_vid_sig.connect(self.__setup_vid_rec) #jelenleg hibás megoldás (ez már nem csak setup)
+        # ha kell video rec, akkor a grabbinget is el kell indítani, függetlenül attól, hogy van a stream window
+        # tehát
+        
     def __setup_emulated_cam(self):
         NUM_CAMERAS = 1
         os.environ["PYLON_CAMEMU"] = f"{NUM_CAMERAS}"
+
+    def __setup_vid_rec(self, to_rec: bool):
+        if to_rec:
+            self.handler.com.img_sig.connect(self.vid_write_thread.writer.write)
+        else:
+            self.handler.com.img_sig.disconnect(self.vid_write_thread.writer.write)
 
     def __set_default_settings(self, cam):
         cam.UserSetSelector = "Default"

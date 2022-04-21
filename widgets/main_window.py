@@ -231,8 +231,10 @@ class Window(QWidget):
     def update_record_button(self, recording_state):
         if recording_state:
             self.record_button.setText("🔴 REC")
+            self.video_checkbox.setEnabled(False)
         else:
             self.record_button.setText("Record")
+            self.video_checkbox.setEnabled(True)
 
     def print_to_console(self, text):
         self.main_console.appendPlainText(text)
@@ -252,9 +254,9 @@ class Window(QWidget):
         self.plot_widget.update_color(self.treadmill)
 
     def record_video(self, recording_state):
-        self.video_checkbox.setEnabled(not recording_state)
+        # self.video_checkbox.setEnabled(not recording_state)
         if self.video_checkbox.isChecked:
-            """Implement video recording trigger here"""
+            self.cam_control.com.rec_vid_sig.emit(True)
             pass
 
     def connect_camera_action(self):
